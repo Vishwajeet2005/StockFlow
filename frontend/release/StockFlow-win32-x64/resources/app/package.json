@@ -1,0 +1,55 @@
+{
+  "name": "inventory-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "main": "electron.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "start:desktop": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "build:exe": "npm run build && electron-builder",
+    "package:exe": "npm run build && electron-packager . StockFlow --platform=win32 --arch=x64 --out=release --overwrite --ignore=node_modules"
+  },
+  "build": {
+    "appId": "com.stockflow.app",
+    "productName": "StockFlow Desktop",
+    "files": [
+      "dist/**/*",
+      "electron.cjs"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "dependencies": {
+    "axios": "^1.6.5",
+    "date-fns": "^3.2.0",
+    "lucide-react": "^0.316.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-router-dom": "^6.21.3",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^41.2.0",
+    "electron-builder": "^26.8.1",
+    "electron-packager": "^17.1.2",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "wait-on": "^9.0.5"
+  },
+  "type": "module"
+}
