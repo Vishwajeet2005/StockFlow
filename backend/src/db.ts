@@ -2,7 +2,7 @@ import initSqlJs, { Database } from 'sql.js';
 import path from 'path';
 import fs from 'fs';
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../../data/inventory.db');
+const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data/inventory.db');
 const DATA_DIR = path.dirname(DB_PATH);
 
 let db: Database;
