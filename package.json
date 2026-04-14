@@ -1,12 +1,12 @@
 {
-  "name": "stockflow-inventory",
+  "name": "stockflow-deployment",
   "version": "1.0.0",
-  "description": "StockFlow Inventory Management System",
+  "description": "Root package.json for deploying the merged frontend+backend to Render.com",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend && npm install",
-    "build:all": "cd backend && npm run build && cd ../frontend && npm run build",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "start": "bash start.sh"
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "build": "npm run install:all && npm run build:frontend && npm run build:backend",
+    "start": "npm start --prefix backend"
   }
 }
