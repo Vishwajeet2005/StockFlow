@@ -19,7 +19,8 @@ function createWindow() {
     },
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false // Disables CORS checking in the Electron desktop client
     }
   });
 
