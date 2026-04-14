@@ -11,22 +11,22 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#020617',
-      symbolColor: '#f8fafc',
-      height: 35
-    },
+    title: 'StockFlow',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      webSecurity: false // Disables CORS checking in the Electron desktop client
+      webSecurity: false // Bypasses CORS directly in desktop instance
     }
   });
 
+  // Hide standard menu for a cleaner look natively
+  mainWindow.setMenuBarVisibility(false);
+
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5174');
+    // Port 5173 is the default for Vite frontend
+    mainWindow.loadURL('http://localhost:5173');
   } else {
+    // In production, point directly to the Vite compiled index.html
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
   }
 
