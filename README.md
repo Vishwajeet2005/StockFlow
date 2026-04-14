@@ -3,6 +3,10 @@
 
 ---
 
+The application of it is deployed on render 
+The deployed link https://stockflow-obza.onrender.com
+
+
 ## What it does
 
 StockFlow is a full-stack web application that helps SMEs manage their entire inventory workflow:
