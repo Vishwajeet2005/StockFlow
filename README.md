@@ -48,6 +48,19 @@ cd frontend && npm run dev
 # Open http://localhost:5173
 ```
 
+### Option C — Desktop App (Windows 10/11)
+StockFlow now features a native Windows companion app built with Electron.
+
+**To run the desktop client locally (Dev Mode):**
+```bash
+cd inventory-management/frontend
+npm run start:desktop
+```
+
+**Physical Release:**
+The standalone Windows `.exe` is generated via `npm run package:exe`. You can download the pre-built portable version from the GitHub Releases section.
+
+
 ### Login credentials
 | Field    | Value       |
 |----------|-------------|
