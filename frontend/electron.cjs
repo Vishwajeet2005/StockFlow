@@ -27,8 +27,15 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
   } else {
     // In production, point directly to the Vite compiled index.html
-    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html')).catch(err => {
+      console.error('Failed to load local file:', err);
+    });
   }
+
+  // Handle errors loading pages
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error(`Page failed to load: ${errorCode} - ${errorDescription}`);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
