@@ -5,7 +5,11 @@
 
 The application of it is deployed on render 
 
-The deployed link https://stockflow-obza.onrender.com
+**Description:** Full-stack inventory management system with 2FA, JWT rotation, Docker & Electron desktop app
+
+**Website:** https://stockflow-obza.onrender.com
+
+**Topics:** inventory, react, typescript, nodejs, docker, electron, 2fa
 
 
 ## What it does
