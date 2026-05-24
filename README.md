@@ -211,4 +211,3 @@ inventory-management/
 ## Participant Details
 - **Project**: StockFlow — Inventory Management System
 - **Hackathon**: Sunmount Solutions — App/Web Development Category
-- **Email**: *(add your email here)*
