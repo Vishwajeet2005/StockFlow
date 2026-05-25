@@ -1,6 +1,8 @@
 # StockFlow — Inventory Management System
 **Sunmount Solutions Hackathon · App/Web Development Category**
 
+![Status](https://img.shields.io/badge/Status-Live-success) ![Hackathon](https://img.shields.io/badge/Sunmount%20Hackathon-App%20Dev-blue) ![Stack](https://img.shields.io/badge/Stack-React%20%7C%20TypeScript%20%7C%20Docker-informational) ![Deploy](https://img.shields.io/badge/Deployed-Render-46E3B7)
+
 ---
 
 The application of it is deployed on render 
