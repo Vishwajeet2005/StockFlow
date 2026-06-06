@@ -14,37 +14,65 @@ import miscRouter from './routes/misc';
 const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const isProd = process.env.NODE_ENV === 'production';
 
-// ─── Security ────────────────────────────────────────────────────────────────
+// ─── Guard: refuse to start with missing secrets in production ───────────────
+if (isProd && (!process.env.JWT_SECRET || !process.env.REFRESH_SECRET)) {
+  console.error('❌ FATAL: JWT_SECRET and REFRESH_SECRET must be set in production. Exiting.');
+  process.exit(1);
+}
+
+// ─── Security headers via Helmet ─────────────────────────────────────────────
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false, // handled by frontend
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'", FRONTEND_URL],
+    },
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
-app.set('trust proxy', 1);
+// Only trust proxy in production (behind load balancer / Render)
+if (isProd) app.set('trust proxy', 1);
 
-// CORS
+// ─── CORS ────────────────────────────────────────────────────────────────────
+const allowedOrigins = isProd
+  ? [FRONTEND_URL]  // strict in production
+  : [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:4173'];
+
 app.use(cors({
-  origin: [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:4173'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. Electron, curl, mobile)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.use(express.json({ limit: '10mb' }));
+// Reduced body limit to mitigate DoS
+app.use(express.json({ limit: '1mb' }));
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
-  max: 50,
+  max: 10, // tightened from 50 to 10 attempts
   message: { error: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true, // don't count successful logins against the limit
 });
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 min
-  max: 300,
+  max: 200,
   message: { error: 'Too many requests. Please slow down.' },
 });
 
