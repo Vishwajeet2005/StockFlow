@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Search, X } from 'lucide-react';
+import { Plus, Trash2, Search, X, ScanLine } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api, { Product, Customer, Supplier, fmt } from '../../lib/api';
+import BarcodeScanner from './BarcodeScanner';
 
 interface OrderLine {
   product_code: string;
@@ -28,6 +29,7 @@ export default function OrderForm({ type, onSave, onClose }: OrderFormProps) {
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [productSearch, setProductSearch] = useState<string[]>(['']);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     api.get('/products').then((r: { data: Product[] }) => setProductList(r.data));
@@ -89,6 +91,33 @@ export default function OrderForm({ type, onSave, onClose }: OrderFormProps) {
   const addLine = () => {
     setLines([...lines, { product_code: '', name: '', quantity: 1, price: 0, total: 0 }]);
     setProductSearch([...productSearch, '']);
+  };
+
+  const handleScan = (decodedText: string) => {
+    setScanning(false);
+    const product = productList.find(p => p.product_code.toUpperCase() === decodedText.toUpperCase());
+    if (!product) {
+      toast.error(`No product found for barcode: ${decodedText}`);
+      return;
+    }
+    
+    // Check if already in lines
+    const existingIdx = lines.findIndex(l => l.product_code === product.product_code);
+    if (existingIdx >= 0) {
+      updateLine(existingIdx, 'quantity', lines[existingIdx].quantity + 1);
+      toast.success(`Increased ${product.name} quantity`);
+    } else {
+      // Find empty line
+      const emptyIdx = lines.findIndex(l => !l.product_code);
+      if (emptyIdx >= 0) {
+        selectProduct(emptyIdx, product);
+      } else {
+        const newLines = [...lines, { product_code: product.product_code, name: product.name, quantity: 1, price: product.price, total: product.price }];
+        setLines(newLines);
+        setProductSearch([...productSearch, `${product.product_code} — ${product.name}`]);
+      }
+      toast.success(`Added ${product.name}`);
+    }
   };
 
   const total = lines.reduce((s: number, l: OrderLine) => s + l.total, 0);
@@ -170,7 +199,10 @@ export default function OrderForm({ type, onSave, onClose }: OrderFormProps) {
                 </tbody>
               </table>
               <div className="px-4 py-3 border-t border-surface-2 flex items-center justify-between">
-                <button className="btn btn-ghost btn-sm text-brand-500" onClick={addLine}><Plus size={14} />Add Product</button>
+                <div className="flex gap-2">
+                  <button className="btn btn-ghost btn-sm text-brand-500" onClick={addLine}><Plus size={14} />Add Row</button>
+                  <button className="btn btn-secondary btn-sm bg-surface-1" onClick={() => setScanning(true)}><ScanLine size={14} />Scan Barcode</button>
+                </div>
                 <div className="text-sm font-semibold text-ink-900">Total: {fmt.currency(total)}</div>
               </div>
             </div>
@@ -188,6 +220,13 @@ export default function OrderForm({ type, onSave, onClose }: OrderFormProps) {
           <button className="btn btn-primary" onClick={handleSubmit} disabled={saving}>{saving ? 'Creating…' : 'Create Order'}</button>
         </div>
       </div>
+      
+      {scanning && (
+        <BarcodeScanner 
+          onScan={handleScan} 
+          onClose={() => setScanning(false)} 
+        />
+      )}
     </div>
   );
 }

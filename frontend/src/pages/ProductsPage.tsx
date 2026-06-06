@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { Plus, Search, Package, Edit2, Trash2, X, Save } from 'lucide-react';
+import { Plus, Search, Package, Edit2, Trash2, X, Save, ScanBarcode } from 'lucide-react';
+import Barcode from 'react-barcode';
 import api, { Product, fmt } from '../lib/api';
 import PageHeader from '../components/layout/PageHeader';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
@@ -17,6 +18,7 @@ export default function ProductsPage() {
   const [form, setForm] = useState<typeof empty>(empty);
   const [showAdd, setShowAdd] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showBarcode, setShowBarcode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -159,6 +161,7 @@ export default function ProductsPage() {
                     </>
                   ) : (
                     <>
+                      <button className="btn btn-secondary btn-sm" onClick={() => setShowBarcode(selected.product_code)}><ScanBarcode size={14} />Barcode</button>
                       <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}><Edit2 size={14} />Edit</button>
                       <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} />Delete</button>
                     </>
@@ -219,6 +222,22 @@ export default function ProductsPage() {
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
         />
+      )}
+
+      {showBarcode && (
+        <div className="modal-overlay" onClick={() => setShowBarcode(null)}>
+          <div className="modal p-6 text-center" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-2">
+              <button className="btn btn-ghost btn-sm p-1" onClick={() => setShowBarcode(null)}><X size={16} /></button>
+            </div>
+            <div className="bg-white p-4 inline-block rounded-lg shadow-sm border border-surface-2 mb-4">
+              <Barcode value={showBarcode} format="CODE128" width={2} height={100} displayValue={true} />
+            </div>
+            <h3 className="font-medium text-ink-900 mb-1">{selected?.name}</h3>
+            <p className="text-sm text-ink-500 mb-4">Scan this code using the camera in the Sales or Purchase Order form to quickly add it.</p>
+            <button className="btn btn-secondary w-full" onClick={() => window.print()}>Print Barcode</button>
+          </div>
+        </div>
       )}
     </div>
   );
