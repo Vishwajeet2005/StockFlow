@@ -1,7 +1,33 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
 dist/
-.env
+build/
+
+# ── Electron compiled release (binaries go in GitHub Releases, not the repo) ──
+frontend/release/
+
+# ── Database files ────────────────────────────────────────────────────────────
 data/
-*.db
-.DS_Store
 backend/data/
+*.db
+*.db-journal
+
+# ── Environment secrets ───────────────────────────────────────────────────────
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# ── Lock files (optional: remove if you prefer to commit them) ────────────────
+package-lock.json
+frontend/package-lock.json
+backend/package-lock.json
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
