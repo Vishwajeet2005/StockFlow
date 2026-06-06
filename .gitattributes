@@ -1,5 +1,42 @@
+# ── Git LFS (large binaries) ──────────────────────────────────────────────────
 *.exe filter=lfs diff=lfs merge=lfs -text
 *.dll filter=lfs diff=lfs merge=lfs -text
 *.dat filter=lfs diff=lfs merge=lfs -text
 *.pak filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
+*.asar filter=lfs diff=lfs merge=lfs -text
+
+# ── Tell GitHub Linguist to ignore generated / vendor files ──────────────────
+# These files inflate language stats and are not representative of the project
+
+# Electron release build output — binaries and bundled app
+frontend/release/** linguist-generated=true
+frontend/release/** linguist-vendored=true
+
+# Compiled frontend dist output
+frontend/dist/** linguist-generated=true
+
+# Config and lock files — not source code
+*.lock linguist-generated=true
+package-lock.json linguist-generated=true
+frontend/package-lock.json linguist-generated=true
+backend/package-lock.json linguist-generated=true
+
+# Nginx and Docker config — not app language
+*.conf linguist-language=Shell
+Dockerfile linguist-language=Dockerfile
+
+# CSS is secondary — TypeScript is the primary language
+frontend/src/index.css linguist-detectable=false
+
+# ── Line endings ──────────────────────────────────────────────────────────────
+* text=auto
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
