@@ -197,7 +197,14 @@ router.get('/me', authMiddleware, (req: AuthRequest, res: Response) => {
 router.post('/change-password', authMiddleware, (req: AuthRequest, res: Response) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
-  if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+  
+  // Enforce strong password policy
+  const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+  if (!strongPassword.test(newPassword)) {
+    return res.status(400).json({ 
+      error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character' 
+    });
+  }
 
   const user = queryOne('SELECT * FROM users WHERE id=?', [req.user!.id]);
   if (!bcrypt.compareSync(currentPassword, user.password)) return res.status(401).json({ error: 'Current password is incorrect' });
