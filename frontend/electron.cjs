@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -13,9 +13,11 @@ function createWindow() {
     minHeight: 600,
     title: 'StockFlow',
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      webSecurity: false // Bypasses CORS directly in desktop instance
+      nodeIntegration: false,          // Security: never expose Node.js to renderer
+      contextIsolation: true,          // Security: sandbox renderer from Node.js
+      webSecurity: true,               // Security: enforce same-origin policy
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false,
     }
   });
 
@@ -23,14 +25,31 @@ function createWindow() {
   mainWindow.setMenuBarVisibility(false);
 
   if (isDev) {
-    // Port 5173 is the default for Vite frontend
+    // In dev mode, load from the Vite dev server
     mainWindow.loadURL('http://localhost:5173');
   } else {
-    // In production, point directly to the Vite compiled index.html
+    // In production, load the compiled app
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html')).catch(err => {
       console.error('Failed to load local file:', err);
     });
   }
+
+  // Security: prevent navigation to external URLs (common attack vector in Electron apps)
+  mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+    const parsedUrl = new URL(navigationUrl);
+    const allowedHosts = ['localhost'];
+    if (!allowedHosts.includes(parsedUrl.hostname)) {
+      event.preventDefault();
+      // Open external links in the system browser instead
+      shell.openExternal(navigationUrl);
+    }
+  });
+
+  // Security: prevent opening new windows from within the renderer
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   // Handle errors loading pages
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
