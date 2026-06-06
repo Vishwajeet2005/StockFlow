@@ -1,6 +1,7 @@
 import initSqlJs, { Database } from 'sql.js';
 import path from 'path';
 import fs from 'fs';
+import bcrypt from 'bcryptjs';
 
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data/inventory.db');
 const DATA_DIR = path.dirname(DB_PATH);
@@ -94,13 +95,14 @@ export async function initDB(): Promise<Database> {
     last_updated TEXT DEFAULT (datetime('now'))
   );`);
 
-  // Seed admin user if none
+  // Seed admin user if none — password is logged ONLY in development for initial setup
   const userCount = queryOne('SELECT COUNT(*) as count FROM users') as { count: number };
   if (!userCount || userCount.count === 0) {
-    const bcrypt = require('bcryptjs');
     const hash = bcrypt.hashSync('Admin@123', 12);
     runSQL('INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)', ['admin', hash]);
-    console.log('✅ Default user: admin / Admin@123');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ Default user created: admin / Admin@123 (change this password immediately!)');
+    }
   }
 
   // Seed sample data
