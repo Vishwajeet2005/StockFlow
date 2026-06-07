@@ -13,7 +13,7 @@ if (!process.env.REFRESH_SECRET) {
 }
 
 export interface AuthRequest extends Request {
-  user?: { id: number; username: string };
+  user?: { id: number; username: string; company_id: number; role: string };
 }
 
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
@@ -23,7 +23,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   }
   const token = auth.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; username: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; username: string; company_id: number; role: string };
     req.user = decoded;
     next();
   } catch (err: any) {
