@@ -61,6 +61,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <span className="ml-auto w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0" title="2FA not enabled" />
             )}
           </NavLink>
+          {role === 'admin' && (
+            <NavLink
+              to="/staff"
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <Users size={17} />
+              <span>Staff Management</span>
+            </NavLink>
+          )}
         </div>
       </nav>
 
