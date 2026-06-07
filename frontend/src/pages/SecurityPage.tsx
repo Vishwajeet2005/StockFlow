@@ -215,10 +215,14 @@ export default function SecurityPage() {
   // Staff creation state
   const [staffForm, setStaffForm] = useState({ username: '', password: '' });
   const [staffLoading, setStaffLoading] = useState(false);
+  const [staffList, setStaffList] = useState<any[]>([]);
 
   useEffect(() => {
     api.get('/auth/me').then(r => setLastLogin(r.data.last_login || '')).catch(() => {});
-  }, []);
+    if (role === 'admin') {
+      api.get('/auth/staff').then(r => setStaffList(r.data)).catch(() => {});
+    }
+  }, [role]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,6 +247,8 @@ export default function SecurityPage() {
       await api.post('/auth/staff', staffForm);
       toast.success(`Staff user ${staffForm.username} created successfully!`);
       setStaffForm({ username: '', password: '' });
+      const { data } = await api.get('/auth/staff');
+      setStaffList(data);
     } catch (e: any) {
       toast.error(e.response?.data?.error || 'Failed to create staff');
     } finally { setStaffLoading(false); }
@@ -415,6 +421,26 @@ export default function SecurityPage() {
                 {staffLoading ? <><Loader2 size={14} className="animate-spin" />Creating…</> : <><UserPlus size={14} />Create Staff User</>}
               </button>
             </form>
+
+            {staffList.length > 0 && (
+              <div className="mt-6 pt-4 border-t border-brand-200">
+                <h4 className="font-semibold text-brand-900 text-xs mb-3 uppercase tracking-wider">Current Staff</h4>
+                <div className="space-y-2">
+                  {staffList.map(s => (
+                    <div key={s.id} className="flex justify-between items-center bg-white p-3 rounded border border-brand-100 text-sm">
+                      <div>
+                        <div className="font-medium text-ink-900">{s.username}</div>
+                        <div className="text-xs text-ink-400">Added {new Date(s.created_at).toLocaleDateString()}</div>
+                      </div>
+                      <div className="text-xs text-ink-500 text-right">
+                        <div>Last Login</div>
+                        <div className="font-medium text-ink-700">{s.last_login ? new Date(s.last_login).toLocaleString('en-IN') : 'Never'}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
