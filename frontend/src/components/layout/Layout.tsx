@@ -17,7 +17,7 @@ const nav = [
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { username, twoFAEnabled, logout } = useAuth();
+  const { username, role, companyName, twoFAEnabled, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -30,8 +30,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Building2 size={16} color="#fff" />
         </div>
         <div>
-          <div className="font-semibold text-ink-900 text-sm leading-tight">StockFlow</div>
-          <div className="text-xs text-ink-300">Inventory Suite</div>
+          <div className="font-semibold text-ink-900 text-sm leading-tight">{companyName || 'StockFlow'}</div>
+          <div className="text-xs text-ink-300">Workspace</div>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-ink-900 truncate">{username}</div>
-            <div className="text-xs text-ink-300">{twoFAEnabled ? '2FA on' : 'No 2FA'}</div>
+            <div className="text-xs text-ink-300 capitalize">{role || 'User'}</div>
           </div>
           <button onClick={handleLogout} className="btn btn-ghost btn-sm p-1.5 h-auto text-ink-400 hover:text-red-500" title="Logout">
             <LogOut size={15} />
