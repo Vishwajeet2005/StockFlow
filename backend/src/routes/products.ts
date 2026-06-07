@@ -7,10 +7,10 @@ router.use(authMiddleware);
 
 router.get('/', (req: AuthRequest, res: Response) => {
   const { search } = req.query;
-  let sql = 'SELECT * FROM products';
-  const params: any[] = [];
+  let sql = 'SELECT * FROM products WHERE company_id = ?';
+  const params: any[] = [req.user!.company_id];
   if (search) {
-    sql += ' WHERE name LIKE ? OR product_code LIKE ? OR description LIKE ?';
+    sql += ' AND (name LIKE ? OR product_code LIKE ? OR description LIKE ?)';
     const s = `%${search}%`;
     params.push(s, s, s);
   }
@@ -19,7 +19,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
 });
 
 router.get('/:code', (req: AuthRequest, res: Response) => {
-  const p = queryOne('SELECT * FROM products WHERE product_code = ?', [req.params.code]);
+  const p = queryOne('SELECT * FROM products WHERE company_id = ? AND product_code = ?', [req.user!.company_id, req.params.code]);
   if (!p) return res.status(404).json({ error: 'Product not found' });
   res.json(p);
 });
@@ -27,24 +27,25 @@ router.get('/:code', (req: AuthRequest, res: Response) => {
 router.post('/', (req: AuthRequest, res: Response) => {
   const { product_code, name, description, weight, price, quantity } = req.body;
   if (!product_code || !name || price === undefined) return res.status(400).json({ error: 'product_code, name, and price are required' });
-  if (queryOne('SELECT product_code FROM products WHERE product_code=?', [product_code])) return res.status(409).json({ error: 'Product code already exists' });
-  runSQL(`INSERT INTO products (product_code,name,description,weight,price,quantity,last_updated) VALUES (?,?,?,?,?,?,datetime('now'))`,
-    [product_code, name, description || '', weight || 0, price, quantity || 0]);
-  res.status(201).json(queryOne('SELECT * FROM products WHERE product_code=?', [product_code]));
+  if (queryOne('SELECT product_code FROM products WHERE company_id=? AND product_code=?', [req.user!.company_id, product_code])) return res.status(409).json({ error: 'Product code already exists' });
+  runSQL(`INSERT INTO products (company_id,product_code,name,description,weight,price,quantity,last_updated) VALUES (?,?,?,?,?,?,?,datetime('now'))`,
+    [req.user!.company_id, product_code, name, description || '', weight || 0, price, quantity || 0]);
+  res.status(201).json(queryOne('SELECT * FROM products WHERE company_id=? AND product_code=?', [req.user!.company_id, product_code]));
 });
 
 router.put('/:code', (req: AuthRequest, res: Response) => {
-  const existing = queryOne('SELECT * FROM products WHERE product_code=?', [req.params.code]);
+  const existing = queryOne('SELECT * FROM products WHERE company_id=? AND product_code=?', [req.user!.company_id, req.params.code]);
   if (!existing) return res.status(404).json({ error: 'Product not found' });
   const { name, description, weight, price, quantity } = req.body;
-  runSQL(`UPDATE products SET name=?,description=?,weight=?,price=?,quantity=?,last_updated=datetime('now') WHERE product_code=?`,
-    [name ?? existing.name, description ?? existing.description, weight ?? existing.weight, price ?? existing.price, quantity ?? existing.quantity, req.params.code]);
-  res.json(queryOne('SELECT * FROM products WHERE product_code=?', [req.params.code]));
+  runSQL(`UPDATE products SET name=?,description=?,weight=?,price=?,quantity=?,last_updated=datetime('now') WHERE company_id=? AND product_code=?`,
+    [name ?? existing.name, description ?? existing.description, weight ?? existing.weight, price ?? existing.price, quantity ?? existing.quantity, req.user!.company_id, req.params.code]);
+  res.json(queryOne('SELECT * FROM products WHERE company_id=? AND product_code=?', [req.user!.company_id, req.params.code]));
 });
 
 router.delete('/:code', (req: AuthRequest, res: Response) => {
-  if (!queryOne('SELECT product_code FROM products WHERE product_code=?', [req.params.code])) return res.status(404).json({ error: 'Not found' });
-  runSQL('DELETE FROM products WHERE product_code=?', [req.params.code]);
+  if (req.user!.role !== 'admin') return res.status(403).json({ error: 'Only admins can delete products' });
+  if (!queryOne('SELECT product_code FROM products WHERE company_id=? AND product_code=?', [req.user!.company_id, req.params.code])) return res.status(404).json({ error: 'Not found' });
+  runSQL('DELETE FROM products WHERE company_id=? AND product_code=?', [req.user!.company_id, req.params.code]);
   res.json({ success: true });
 });
 
