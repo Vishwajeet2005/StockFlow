@@ -13,7 +13,8 @@ import miscRouter from './routes/misc';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Render automatically provides RENDER_EXTERNAL_URL (e.g., https://stockflow-obza.onrender.com)
+const FRONTEND_URL = process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
 const isProd = process.env.NODE_ENV === 'production';
 
 // ─── Guard: refuse to start with missing secrets in production ───────────────
