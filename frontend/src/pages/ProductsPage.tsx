@@ -10,6 +10,10 @@ const empty: Omit<Product, 'last_updated'> = {
   product_code: '', name: '', description: '', weight: 0, price: 0, quantity: 0
 };
 
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div><label className="label">{label}</label>{children}</div>
+);
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
@@ -78,9 +82,7 @@ export default function ProductsPage() {
     } catch { toast.error('Failed to delete'); }
   };
 
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div><label className="label">{label}</label>{children}</div>
-  );
+
 
   return (
     <div className="h-full flex flex-col">
