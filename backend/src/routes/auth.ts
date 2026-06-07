@@ -18,8 +18,8 @@ function hashToken(token: string) {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
-function generateTokens(userId: number, username: string) {
-  const accessToken = jwt.sign({ id: userId, username }, JWT_SECRET, { expiresIn: ACCESS_EXPIRY });
+function generateTokens(userId: number, username: string, company_id: number, role: string) {
+  const accessToken = jwt.sign({ id: userId, username, company_id, role }, JWT_SECRET, { expiresIn: ACCESS_EXPIRY });
   const refreshToken = crypto.randomBytes(64).toString('hex');
   const expiresAt = new Date(Date.now() + REFRESH_EXPIRY_MS).toISOString();
   runSQL('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?,?,?)', [userId, hashToken(refreshToken), expiresAt]);
@@ -57,14 +57,42 @@ router.post('/login', async (req: Request, res: Response) => {
 
   // If 2FA is enabled, return a partial token requiring TOTP
   if (user.totp_enabled) {
-    const partialToken = jwt.sign({ id: user.id, username: user.username, partial: true }, JWT_SECRET, { expiresIn: '5m' });
+    const partialToken = jwt.sign({ id: user.id, username: user.username, company_id: user.company_id, role: user.role, partial: true }, JWT_SECRET, { expiresIn: '5m' });
     return res.json({ requires2FA: true, partialToken });
   }
 
   // No 2FA: issue full tokens
-  const { accessToken, refreshToken } = generateTokens(user.id, user.username);
+  const { accessToken, refreshToken } = generateTokens(user.id, user.username, user.company_id, user.role);
   runSQL("UPDATE users SET last_login=datetime('now') WHERE id=?", [user.id]);
-  res.json({ accessToken, refreshToken, username: user.username, twoFAEnabled: false });
+  res.json({ accessToken, refreshToken, username: user.username, role: user.role, twoFAEnabled: false });
+});
+
+// ─── Registration (New Company) ──────────────────────────────────────────────
+router.post('/register', async (req: Request, res: Response) => {
+  const { company_name, username, password } = req.body;
+  if (!company_name || !username || !password) return res.status(400).json({ error: 'Company name, username, and password required' });
+
+  // Enforce strong password policy
+  const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+  if (!strongPassword.test(password)) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character' });
+  }
+
+  const existingUser = queryOne('SELECT id FROM users WHERE username = ?', [username]);
+  if (existingUser) return res.status(400).json({ error: 'Username already exists' });
+
+  // Create Company
+  runSQL('INSERT INTO companies (name) VALUES (?)', [company_name]);
+  const company = queryOne('SELECT id FROM companies WHERE name = ? ORDER BY id DESC LIMIT 1', [company_name]);
+  
+  // Create Admin User
+  const hash = bcrypt.hashSync(password, 12);
+  runSQL('INSERT INTO users (company_id, username, password, role) VALUES (?, ?, ?, ?)', [company.id, username, hash, 'admin']);
+  
+  const user = queryOne('SELECT * FROM users WHERE username = ?', [username]);
+  const { accessToken, refreshToken } = generateTokens(user.id, user.username, user.company_id, user.role);
+  runSQL("UPDATE users SET last_login=datetime('now') WHERE id=?", [user.id]);
+  res.json({ accessToken, refreshToken, username: user.username, role: user.role, twoFAEnabled: false });
 });
 
 // ─── Step 2: Verify TOTP ────────────────────────────────────────────────────
@@ -93,9 +121,9 @@ router.post('/verify-2fa', (req: Request, res: Response) => {
 
   if (!valid) return res.status(401).json({ error: 'Invalid authenticator code. Please try again.' });
 
-  const { accessToken, refreshToken } = generateTokens(user.id, user.username);
+  const { accessToken, refreshToken } = generateTokens(user.id, user.username, user.company_id, user.role);
   runSQL("UPDATE users SET last_login=datetime('now'), failed_attempts=0 WHERE id=?", [user.id]);
-  res.json({ accessToken, refreshToken, username: user.username, twoFAEnabled: true });
+  res.json({ accessToken, refreshToken, username: user.username, role: user.role, twoFAEnabled: true });
 });
 
 // ─── Refresh token ───────────────────────────────────────────────────────────
@@ -112,7 +140,7 @@ router.post('/refresh', (req: Request, res: Response) => {
 
   // Rotate refresh token
   runSQL('DELETE FROM refresh_tokens WHERE token_hash=?', [tokenHash]);
-  const { accessToken, refreshToken: newRefresh } = generateTokens(user.id, user.username);
+  const { accessToken, refreshToken: newRefresh } = generateTokens(user.id, user.username, user.company_id, user.role);
   res.json({ accessToken, refreshToken: newRefresh });
 });
 
@@ -188,9 +216,28 @@ router.post('/2fa/disable', authMiddleware, (req: AuthRequest, res: Response) =>
 
 // ─── Get auth status ─────────────────────────────────────────────────────────
 router.get('/me', authMiddleware, (req: AuthRequest, res: Response) => {
-  const user = queryOne('SELECT id, username, totp_enabled, last_login, created_at FROM users WHERE id=?', [req.user!.id]);
+  const user = queryOne(`
+    SELECT u.id, u.username, u.role, u.totp_enabled, u.last_login, u.created_at, c.name as company_name 
+    FROM users u 
+    JOIN companies c ON u.company_id = c.id 
+    WHERE u.id=?
+  `, [req.user!.id]);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json({ ...user, twoFAEnabled: !!user.totp_enabled });
+});
+
+// ─── Create Staff Account (Admin only) ───────────────────────────────────────
+router.post('/staff', authMiddleware, async (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') return res.status(403).json({ error: 'Only Admins can create staff accounts' });
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
+  const existingUser = queryOne('SELECT id FROM users WHERE username = ?', [username]);
+  if (existingUser) return res.status(400).json({ error: 'Username already exists' });
+
+  const hash = bcrypt.hashSync(password, 12);
+  runSQL('INSERT INTO users (company_id, username, password, role) VALUES (?, ?, ?, ?)', [req.user!.company_id, username, hash, 'staff']);
+  res.json({ success: true, message: 'Staff account created successfully' });
 });
 
 // ─── Change password ─────────────────────────────────────────────────────────
