@@ -22,16 +22,39 @@ export async function initDB(): Promise<Database> {
 
   db.run('PRAGMA foreign_keys = ON;');
 
+  // Migration: Drop old tables if they lack company_id
+  const userTableInfo = queryAll("PRAGMA table_info(users)");
+  const hasCompanyId = userTableInfo.some((c: any) => c.name === 'company_id');
+  if (!hasCompanyId && userTableInfo.length > 0) {
+    console.log('⚠️ Migrating to multi-company: dropping old single-tenant tables...');
+    db.run('DROP TABLE IF EXISTS users');
+    db.run('DROP TABLE IF EXISTS refresh_tokens');
+    db.run('DROP TABLE IF EXISTS products');
+    db.run('DROP TABLE IF EXISTS customers');
+    db.run('DROP TABLE IF EXISTS suppliers');
+    db.run('DROP TABLE IF EXISTS orders');
+    db.run('DROP TABLE IF EXISTS manufacturing');
+  }
+
+  db.run(`CREATE TABLE IF NOT EXISTS companies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );`);
+
   db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'staff',
     totp_secret TEXT,
     totp_enabled INTEGER DEFAULT 0,
     failed_attempts INTEGER DEFAULT 0,
     locked_until TEXT,
     last_login TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE
   );`);
 
   db.run(`CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -39,39 +62,50 @@ export async function initDB(): Promise<Database> {
     user_id INTEGER NOT NULL,
     token_hash TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   );`);
 
   db.run(`CREATE TABLE IF NOT EXISTS products (
-    product_code TEXT PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    product_code TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT DEFAULT '',
     weight REAL DEFAULT 0,
     price REAL NOT NULL DEFAULT 0,
     quantity REAL NOT NULL DEFAULT 0,
-    last_updated TEXT DEFAULT (datetime('now'))
+    last_updated TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY(company_id, product_code),
+    FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE
   );`);
 
   db.run(`CREATE TABLE IF NOT EXISTS customers (
-    customer_id TEXT PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    customer_id TEXT NOT NULL,
     name TEXT NOT NULL,
     email TEXT DEFAULT '',
     phone TEXT DEFAULT '',
     address TEXT DEFAULT '',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY(company_id, customer_id),
+    FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE
   );`);
 
   db.run(`CREATE TABLE IF NOT EXISTS suppliers (
-    supplier_id TEXT PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    supplier_id TEXT NOT NULL,
     name TEXT NOT NULL,
     email TEXT DEFAULT '',
     phone TEXT DEFAULT '',
     address TEXT DEFAULT '',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY(company_id, supplier_id),
+    FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE
   );`);
 
   db.run(`CREATE TABLE IF NOT EXISTS orders (
-    order_id TEXT PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    order_id TEXT NOT NULL,
     type TEXT NOT NULL,
     party_id TEXT DEFAULT '',
     party_name TEXT DEFAULT '',
@@ -80,11 +114,14 @@ export async function initDB(): Promise<Database> {
     date TEXT DEFAULT (datetime('now')),
     notes TEXT DEFAULT '',
     total_amount REAL DEFAULT 0,
-    last_updated TEXT DEFAULT (datetime('now'))
+    last_updated TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY(company_id, order_id),
+    FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE
   );`);
 
   db.run(`CREATE TABLE IF NOT EXISTS manufacturing (
-    batch_id TEXT PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    batch_id TEXT NOT NULL,
     batch_number TEXT NOT NULL,
     raw_materials TEXT NOT NULL DEFAULT '[]',
     output TEXT NOT NULL DEFAULT '[]',
@@ -92,18 +129,12 @@ export async function initDB(): Promise<Database> {
     notes TEXT DEFAULT '',
     start_date TEXT DEFAULT (datetime('now')),
     end_date TEXT,
-    last_updated TEXT DEFAULT (datetime('now'))
+    last_updated TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY(company_id, batch_id),
+    FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE CASCADE
   );`);
 
-  // Seed admin user if none — password is logged ONLY in development for initial setup
-  const userCount = queryOne('SELECT COUNT(*) as count FROM users') as { count: number };
-  if (!userCount || userCount.count === 0) {
-    const hash = bcrypt.hashSync('Admin@123', 12);
-    runSQL('INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)', ['admin', hash]);
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('✅ Default user created: admin / Admin@123 (change this password immediately!)');
-    }
-  }
+
 
   // No sample data seeded anymore as requested.
 
