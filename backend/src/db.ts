@@ -105,28 +105,7 @@ export async function initDB(): Promise<Database> {
     }
   }
 
-  // Seed sample data
-  const productCount = queryOne('SELECT COUNT(*) as count FROM products') as { count: number };
-  if (!productCount || productCount.count === 0) {
-    [
-      ['PRD001', 'Steel Rod 10mm', 'High tensile steel rod, 10mm diameter', 2.5, 450.00, 500],
-      ['PRD002', 'Copper Wire 2.5sqmm', 'Electrical grade copper wire', 1.2, 1200.00, 200],
-      ['PRD003', 'PVC Pipe 1 inch', 'Schedule 40 PVC pipe, 1 inch', 0.8, 180.00, 350],
-      ['PRD004', 'Bearing 6205', 'Deep groove ball bearing', 0.15, 320.00, 150],
-      ['PRD005', 'Hydraulic Oil 68', 'Industrial hydraulic oil, per litre', 0.9, 95.00, 80],
-    ].forEach(p => runSQL('INSERT OR IGNORE INTO products (product_code,name,description,weight,price,quantity) VALUES (?,?,?,?,?,?)', p));
-
-    [
-      ['CUST001', 'Ramesh Industries Pvt Ltd', 'ramesh@example.com', '9876543210', 'Delhi'],
-      ['CUST002', 'Sharma Enterprises', 'sharma@example.com', '9871234567', 'Mumbai'],
-      ['CUST003', 'Gupta Manufacturing', 'gupta@example.com', '9865432109', 'Pune'],
-    ].forEach(c => runSQL('INSERT OR IGNORE INTO customers (customer_id,name,email,phone,address) VALUES (?,?,?,?,?)', c));
-
-    [
-      ['SUPP001', 'Tata Steel Distributors', 'tata@example.com', '9812345678', 'Jamshedpur'],
-      ['SUPP002', 'Havells Wholesale', 'havells@example.com', '9856789012', 'Noida'],
-    ].forEach(s => runSQL('INSERT OR IGNORE INTO suppliers (supplier_id,name,email,phone,address) VALUES (?,?,?,?,?)', s));
-  }
+  // No sample data seeded anymore as requested.
 
   persist();
   console.log('✅ Database ready');
