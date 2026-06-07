@@ -240,6 +240,12 @@ router.post('/staff', authMiddleware, async (req: AuthRequest, res: Response) =>
   res.json({ success: true, message: 'Staff account created successfully' });
 });
 
+router.get('/staff', authMiddleware, (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') return res.status(403).json({ error: 'Only Admins can view staff accounts' });
+  const staff = queryAll('SELECT id, username, role, last_login, created_at FROM users WHERE company_id = ? AND role = ?', [req.user!.company_id, 'staff']);
+  res.json(staff);
+});
+
 // ─── Change password ─────────────────────────────────────────────────────────
 router.post('/change-password', authMiddleware, (req: AuthRequest, res: Response) => {
   const { currentPassword, newPassword } = req.body;
