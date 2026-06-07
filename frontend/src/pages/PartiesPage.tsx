@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Plus, Users, Building, Trash2, X, Save } from 'lucide-react';
 import api, { Customer, Supplier, fmt } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
 
@@ -52,6 +53,7 @@ function PartyForm({ type, onSave, onClose }: { type: Tab; onSave: (p: any) => v
 }
 
 export default function PartiesPage() {
+  const { role } = useAuth();
   const [tab, setTab] = useState<Tab>('customers');
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -126,7 +128,9 @@ export default function PartiesPage() {
                   <h2 className="font-semibold text-ink-900">{selected.name}</h2>
                   <p className="text-xs text-ink-400 font-mono mt-0.5">{selected.customer_id || selected.supplier_id}</p>
                 </div>
-                <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} />Delete</button>
+                {role === 'admin' && (
+                  <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} />Delete</button>
+                )}
               </div>
               <div className="card p-5 max-w-md space-y-3 text-sm">
                 {[

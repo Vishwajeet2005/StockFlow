@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { Plus, Search, Wrench, CheckCircle, Trash2, X } from 'lucide-react';
 import api, { ManufacturingBatch, Product, fmt, statusBadge, statusLabel } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
 
@@ -102,6 +103,7 @@ function BatchForm({ onSave, onClose }: { onSave: (b: ManufacturingBatch) => voi
 }
 
 export default function ManufacturingPage() {
+  const { role } = useAuth();
   const [batches, setBatches] = useState<ManufacturingBatch[]>([]);
   const [selected, setSelected] = useState<ManufacturingBatch | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -173,7 +175,9 @@ export default function ManufacturingPage() {
                 {selected.status === 'in_progress' && (
                   <div className="flex gap-2">
                     <button className="btn btn-primary btn-sm" onClick={() => setConfirmComplete(true)}><CheckCircle size={14} />Mark Complete</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => setConfirmCancel(true)}><X size={14} />Cancel</button>
+                    {role === 'admin' && (
+                      <button className="btn btn-danger btn-sm" onClick={() => setConfirmCancel(true)}><X size={14} />Cancel</button>
+                    )}
                   </div>
                 )}
               </div>

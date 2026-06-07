@@ -2,11 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { Plus, Search, ShoppingCart, ChevronRight, Trash2, ArrowRight } from 'lucide-react';
 import api, { Order, fmt, statusLabel, statusBadge, saleStatuses } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import OrderForm from '../components/modules/OrderForm';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
 
 export default function SalesPage() {
+  const { role } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Order | null>(null);
@@ -102,7 +104,9 @@ export default function SalesPage() {
                       <ArrowRight size={14} />Move to {nextStatus(selected)}
                     </button>
                   )}
-                  <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} /></button>
+                  {role === 'admin' && (
+                    <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} /></button>
+                  )}
                 </div>
               </div>
 

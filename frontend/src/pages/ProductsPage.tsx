@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { Plus, Search, Package, Edit2, Trash2, X, Save, ScanBarcode } from 'lucide-react';
 import Barcode from 'react-barcode';
 import api, { Product, fmt } from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
 
@@ -15,6 +16,7 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
 );
 
 export default function ProductsPage() {
+  const { role } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Product | null>(null);
@@ -165,7 +167,9 @@ export default function ProductsPage() {
                     <>
                       <button className="btn btn-secondary btn-sm" onClick={() => setShowBarcode(selected.product_code)}><ScanBarcode size={14} />Barcode</button>
                       <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}><Edit2 size={14} />Edit</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} />Delete</button>
+                      {role === 'admin' && (
+                        <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}><Trash2 size={14} />Delete</button>
+                      )}
                     </>
                   )}
                 </div>

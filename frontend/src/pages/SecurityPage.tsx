@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { ShieldCheck, ShieldOff, KeyRound, QrCode, Eye, EyeOff, CheckCircle, Loader2, X } from 'lucide-react';
+import { ShieldCheck, ShieldOff, KeyRound, QrCode, Eye, EyeOff, CheckCircle, Loader2, X, UserPlus, Users } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
@@ -203,7 +203,7 @@ function Disable2FAModal({ onClose, onDisabled }: { onClose: () => void; onDisab
 
 // ── Main Settings Page ─────────────────────────────────────────────────────────
 export default function SecurityPage() {
-  const { username, twoFAEnabled, set2FAEnabled } = useAuth();
+  const { username, role, twoFAEnabled, set2FAEnabled } = useAuth();
   const [show2FASetup, setShow2FASetup] = useState(false);
   const [showDisable2FA, setShowDisable2FA] = useState(false);
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
@@ -211,6 +211,10 @@ export default function SecurityPage() {
   const [showNew, setShowNew] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [lastLogin, setLastLogin] = useState('');
+
+  // Staff creation state
+  const [staffForm, setStaffForm] = useState({ username: '', password: '' });
+  const [staffLoading, setStaffLoading] = useState(false);
 
   useEffect(() => {
     api.get('/auth/me').then(r => setLastLogin(r.data.last_login || '')).catch(() => {});
@@ -229,6 +233,19 @@ export default function SecurityPage() {
     } catch (e: any) {
       toast.error(e.response?.data?.error || 'Failed to change password');
     } finally { setPwLoading(false); }
+  };
+
+  const handleCreateStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (staffForm.password.length < 8) { toast.error('Password must be at least 8 characters'); return; }
+    setStaffLoading(true);
+    try {
+      await api.post('/auth/staff', staffForm);
+      toast.success(`Staff user ${staffForm.username} created successfully!`);
+      setStaffForm({ username: '', password: '' });
+    } catch (e: any) {
+      toast.error(e.response?.data?.error || 'Failed to create staff');
+    } finally { setStaffLoading(false); }
   };
 
   const pwStrength = (p: string) => {
@@ -370,6 +387,36 @@ export default function SecurityPage() {
             </button>
           </form>
         </div>
+
+        {/* User Management (Admins Only) */}
+        {role === 'admin' && (
+          <div className="card p-5 border-brand-100 bg-brand-50/30">
+            <div className="flex items-center gap-2 mb-4">
+              <Users size={16} className="text-brand-600" />
+              <h3 className="font-semibold text-brand-900 text-sm">Staff Management</h3>
+            </div>
+            <p className="text-xs text-ink-500 mb-4">Create limited access staff accounts for your workspace. Staff can view and manage inventory, orders, and manufacturing, but cannot delete products or access security settings.</p>
+            
+            <form onSubmit={handleCreateStaff} className="space-y-4 max-w-sm">
+              <div>
+                <label className="label">Staff Username</label>
+                <input className="input" placeholder="e.g. jdoe_staff" value={staffForm.username} onChange={e => setStaffForm(f => ({ ...f, username: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="label">Initial Password</label>
+                <div className="relative">
+                  <input className="input pr-10" type={showNew ? 'text' : 'password'} placeholder="Min. 8 characters" value={staffForm.password} onChange={e => setStaffForm(f => ({ ...f, password: e.target.value }))} required />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 hover:text-ink-500" onClick={() => setShowNew(v => !v)} tabIndex={-1}>
+                    {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={staffLoading}>
+                {staffLoading ? <><Loader2 size={14} className="animate-spin" />Creating…</> : <><UserPlus size={14} />Create Staff User</>}
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Security tips */}
         <div className="card p-5 bg-blue-50 border-blue-100">
