@@ -138,9 +138,9 @@ export default function ProductsPage() {
                 </div>
                 <Field label="Description"><textarea className="input" rows={2} placeholder="Optional description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></Field>
                 <div className="grid grid-cols-3 gap-4">
-                  <Field label="Weight (kg)"><input className="input" type="number" step="0.01" min="0" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: parseFloat(e.target.value) || 0 }))} /></Field>
-                  <Field label="Price (₹) *"><input className="input" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></Field>
-                  <Field label="Quantity"><input className="input" type="number" step="0.01" min="0" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: parseFloat(e.target.value) || 0 }))} /></Field>
+                  <Field label="Weight (kg)"><input className="input" type="number" step="0.01" min="0" value={form.weight || ''} onChange={e => setForm(f => ({ ...f, weight: parseFloat(e.target.value) || 0 }))} /></Field>
+                  <Field label="Price (₹) *"><input className="input" type="number" step="0.01" min="0" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></Field>
+                  <Field label="Quantity"><input className="input" type="number" step="1" min="0" value={form.quantity || ''} onChange={e => setForm(f => ({ ...f, quantity: parseInt(e.target.value) || 0 }))} /></Field>
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button className="btn btn-primary btn-sm" onClick={handleSaveNew} disabled={saving}><Save size={14} /> {saving ? 'Saving…' : 'Save Product'}</button>
@@ -180,9 +180,9 @@ export default function ProductsPage() {
                     </div>
                     <Field label="Description"><textarea className="input" rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></Field>
                     <div className="grid grid-cols-3 gap-4">
-                      <Field label="Weight (kg)"><input className="input" type="number" step="0.01" min="0" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: parseFloat(e.target.value) || 0 }))} /></Field>
-                      <Field label="Price (₹)"><input className="input" type="number" step="0.01" min="0" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></Field>
-                      <Field label="Quantity"><input className="input" type="number" step="0.01" min="0" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: parseFloat(e.target.value) || 0 }))} /></Field>
+                      <Field label="Weight (kg)"><input className="input" type="number" step="0.01" min="0" value={form.weight || ''} onChange={e => setForm(f => ({ ...f, weight: parseFloat(e.target.value) || 0 }))} /></Field>
+                      <Field label="Price (₹)"><input className="input" type="number" step="0.01" min="0" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></Field>
+                      <Field label="Quantity"><input className="input" type="number" step="1" min="0" value={form.quantity || ''} onChange={e => setForm(f => ({ ...f, quantity: parseInt(e.target.value) || 0 }))} /></Field>
                     </div>
                   </>
                 ) : (
