@@ -4,13 +4,13 @@ import toast from 'react-hot-toast';
 import { Building2, Eye, EyeOff, ShieldCheck, ArrowLeft, Lock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
-type Step = 'password' | 'totp';
+type Step = 'password' | 'totp' | 'register';
 
 export default function LoginPage() {
   const { login, verify2FA } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('password');
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ username: '', password: '', company_name: '' });
   const [totpCode, setTotpCode] = useState(['', '', '', '', '', '']);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,6 +20,21 @@ export default function LoginPage() {
   useEffect(() => {
     if (step === 'totp') totpRefs.current[0]?.focus();
   }, [step]);
+
+  // ── Step 1: Registration ──────────────────────────────────────────────────
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      await useAuth.getState().register(form.company_name, form.username, form.password);
+      navigate('/');
+    } catch (e: any) {
+      setErrorMsg(e.response?.data?.error || 'Registration failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ── Step 1: Password ────────────────────────────────────────────────────────
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -162,12 +177,83 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-5 pt-4 border-t border-surface-2">
-              <div className="flex items-center gap-1.5 text-xs text-ink-300">
-                <ShieldCheck size={13} />
-                <span>Protected by 2-step verification</span>
-              </div>
+            <div className="mt-5 pt-4 border-t border-surface-2 text-center">
+              <p className="text-sm text-ink-500">Don't have an account?</p>
+              <button 
+                type="button" 
+                className="mt-2 btn btn-secondary w-full"
+                onClick={() => { setStep('register'); setErrorMsg(''); setForm({ company_name: '', username: '', password: ''}); }}
+              >
+                Register your Company
+              </button>
             </div>
+          </div>
+        ) : step === 'register' ? (
+          <div className="card p-6 animate-fade-in">
+            <button
+              className="flex items-center gap-1 text-sm text-ink-400 hover:text-ink-700 mb-4 transition-colors"
+              onClick={() => { setStep('password'); setErrorMsg(''); }}
+            >
+              <ArrowLeft size={14} /> Back to login
+            </button>
+            <div className="flex items-center gap-2 mb-1">
+              <Building2 size={16} className="text-brand-500" />
+              <h2 className="text-lg font-semibold text-ink-900">Register Company</h2>
+            </div>
+            <p className="text-sm text-ink-400 mb-6">Create a new StockFlow workspace</p>
+
+            {errorMsg && (
+              <div className="mb-4 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 leading-snug">
+                {errorMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div>
+                <label className="label">Company Name</label>
+                <input
+                  className="input"
+                  placeholder="Acme Corp"
+                  value={form.company_name}
+                  onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">Admin Username</label>
+                <input
+                  className="input"
+                  placeholder="admin"
+                  value={form.username}
+                  onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">Admin Password</label>
+                <div className="relative">
+                  <input
+                    className="input pr-10"
+                    type={showPass ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 hover:text-ink-500 transition-colors"
+                    onClick={() => setShowPass(v => !v)}
+                    tabIndex={-1}
+                  >
+                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary btn-lg w-full mt-1" disabled={loading}>
+                {loading ? 'Registering…' : 'Create Workspace'}
+              </button>
+            </form>
           </div>
         ) : (
           <div className="card p-6 animate-fade-in">
@@ -236,7 +322,7 @@ export default function LoginPage() {
         )}
 
         <p className="text-xs text-ink-300 text-center mt-5">
-          Default credentials: <span className="font-mono">admin</span> / <span className="font-mono">Admin@123</span>
+          Enterprise Grade Inventory Management System
         </p>
       </div>
     </div>
