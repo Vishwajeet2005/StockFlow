@@ -79,7 +79,7 @@ export default function HistoryPage() {
           {/* Search */}
           <div className="relative flex-1 max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-300" />
-            <input className="input pl-8 text-sm" placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="input !pl-8 text-sm" placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
 
