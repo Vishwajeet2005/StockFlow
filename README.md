@@ -7,22 +7,25 @@
 
 The application of it is deployed on render 
 
-**Description:** Full-stack inventory management system with 2FA, JWT rotation, Docker & Electron desktop app
+**Description:** Full-stack inventory management system with Multi-tenant architecture, RBAC, 2FA, JWT rotation, Docker & Electron desktop app
 
 **Website:** https://stockflow-obza.onrender.com
 
-**Topics:** inventory, react, typescript, nodejs, docker, electron, 2fa
+**Topics:** inventory, react, typescript, nodejs, docker, electron, 2fa, multi-tenant, rbac
 
 
 ## What it does
 
 StockFlow is a full-stack web application that helps SMEs manage their entire inventory workflow:
+- **Multi-Company Architecture**: True multi-tenant isolation, allowing multiple companies to register and manage their own isolated workspaces.
+- **Role-Based Access Control (RBAC)**: Differentiate between Admin and Staff roles. Staff have limited privileges (e.g. they cannot delete items or view reports).
 - Product catalogue with live stock levels
 - Sales orders (Quotation → Packing → Dispatched → Completed)
 - Purchase orders (Quotation Received → Unpaid → Paid → Completed)
 - Manufacturing / WIP batch tracking
 - Customer & Supplier management
 - Dashboard with real-time stats and low-stock alerts
+- **Reports & Analytics**: Visual charts (via recharts) for sales trends, top-selling products, and revenue breakdowns (Admin only).
 - **2-Step Authentication (TOTP)** — Google Authenticator / Authy
 - Order history with CSV export
 
@@ -70,8 +73,8 @@ The standalone Windows `.exe` is generated via `npm run package:exe`. You can do
 ### Login credentials
 | Field    | Value       |
 |----------|-------------|
-| Username | `admin`     |
-| Password | `Admin@123` |
+| Username | `admin`     | Or register your own company workspace |
+| Password | `Admin@123` | |
 
 ---
 
@@ -149,12 +152,14 @@ inventory-management/
             ├── LoginPage.tsx    ← 2-step login (password → TOTP code)
             ├── SecurityPage.tsx ← 2FA setup/disable, change password
             ├── DashboardPage.tsx
+            ├── ReportsPage.tsx  ← Charts & analytics (Admins only)
             ├── ProductsPage.tsx
             ├── SalesPage.tsx
             ├── PurchasesPage.tsx
             ├── ManufacturingPage.tsx
             ├── HistoryPage.tsx
-            └── PartiesPage.tsx
+            ├── PartiesPage.tsx
+            └── StaffPage.tsx    ← Staff management (Admins only)
 ```
 
 ---
@@ -164,11 +169,15 @@ inventory-management/
 ### Auth
 | Method | Endpoint                  | Description                    |
 |--------|---------------------------|--------------------------------|
+| POST   | /api/auth/register        | Register new company & admin   |
 | POST   | /api/auth/login           | Step 1: password check         |
 | POST   | /api/auth/verify-2fa      | Step 2: TOTP code verification |
 | POST   | /api/auth/refresh         | Rotate refresh token           |
 | POST   | /api/auth/logout          | Revoke refresh token           |
 | GET    | /api/auth/me              | Get current user profile       |
+| GET    | /api/auth/staff           | List all staff (Admin only)    |
+| POST   | /api/auth/staff           | Create staff (Admin only)      |
+| DELETE | /api/auth/staff/:id       | Delete staff (Admin only)      |
 | POST   | /api/auth/2fa/setup       | Generate TOTP secret + QR code |
 | POST   | /api/auth/2fa/enable      | Confirm and enable 2FA         |
 | POST   | /api/auth/2fa/disable     | Disable 2FA (requires password + code)|
@@ -203,6 +212,7 @@ inventory-management/
 | Method | Endpoint            | Description            |
 |--------|---------------------|------------------------|
 | GET    | /api/dashboard      | Live stats + alerts    |
+| GET    | /api/analytics      | Aggregated stats & chart data (Admin only)|
 | GET    | /api/customers      | List customers         |
 | POST   | /api/customers      | Add customer           |
 | GET    | /api/suppliers      | List suppliers         |
