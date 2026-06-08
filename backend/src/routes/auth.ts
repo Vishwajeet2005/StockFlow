@@ -246,6 +246,17 @@ router.get('/staff', authMiddleware, (req: AuthRequest, res: Response) => {
   res.json(staff);
 });
 
+router.delete('/staff/:id', authMiddleware, (req: AuthRequest, res: Response) => {
+  if (req.user!.role !== 'admin') return res.status(403).json({ error: 'Only Admins can delete staff accounts' });
+  const staffId = parseInt(req.params.id);
+  const existing = queryOne('SELECT id FROM users WHERE id = ? AND company_id = ? AND role = ?', [staffId, req.user!.company_id, 'staff']);
+  if (!existing) return res.status(404).json({ error: 'Staff account not found' });
+  
+  runSQL('DELETE FROM users WHERE id = ?', [staffId]);
+  runSQL('DELETE FROM refresh_tokens WHERE user_id = ?', [staffId]);
+  res.json({ success: true, message: 'Staff account deleted' });
+});
+
 // ─── Change password ─────────────────────────────────────────────────────────
 router.post('/change-password', authMiddleware, (req: AuthRequest, res: Response) => {
   const { currentPassword, newPassword } = req.body;
