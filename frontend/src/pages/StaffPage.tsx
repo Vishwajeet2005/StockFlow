@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Users, UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Users, UserPlus, Loader2, Eye, EyeOff, Trash2 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
+import ConfirmDialog from '../components/layout/ConfirmDialog';
 
 export default function StaffPage() {
   const { role } = useAuth();
@@ -11,6 +12,7 @@ export default function StaffPage() {
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [showNew, setShowNew] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
 
   useEffect(() => {
     if (role === 'admin') {
@@ -31,6 +33,19 @@ export default function StaffPage() {
     } catch (e: any) {
       toast.error(e.response?.data?.error || 'Failed to create staff');
     } finally { setStaffLoading(false); }
+  };
+
+  const handleDeleteStaff = async () => {
+    if (!confirmDelete) return;
+    try {
+      await api.delete(`/auth/staff/${confirmDelete.id}`);
+      setStaffList(prev => prev.filter(s => s.id !== confirmDelete.id));
+      toast.success('Staff account removed');
+    } catch (e: any) {
+      toast.error(e.response?.data?.error || 'Failed to remove staff');
+    } finally {
+      setConfirmDelete(null);
+    }
   };
 
   if (role !== 'admin') {
@@ -88,8 +103,10 @@ export default function StaffPage() {
                     <div className="text-xs text-ink-400">Added {new Date(s.created_at).toLocaleDateString()}</div>
                   </div>
                   <div className="text-xs text-ink-500 text-right">
-                    <div>Last Login</div>
-                    <div className="font-medium text-ink-700">{s.last_login ? new Date(s.last_login).toLocaleString('en-IN') : 'Never'}</div>
+                    <div className="font-medium text-ink-700 mb-1.5">{s.last_login ? new Date(s.last_login).toLocaleString('en-IN') : 'Never'}</div>
+                    <button className="btn btn-ghost btn-sm p-1 h-auto text-red-500 hover:bg-red-50 ml-auto" onClick={() => setConfirmDelete(s)} title="Remove Staff">
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -101,6 +118,17 @@ export default function StaffPage() {
           )}
         </div>
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Remove Staff Account"
+          message={`Are you sure you want to remove the staff account "${confirmDelete.username}"? They will no longer be able to log in.`}
+          confirmLabel="Remove"
+          danger
+          onConfirm={handleDeleteStaff}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
