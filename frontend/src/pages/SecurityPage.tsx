@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { ShieldCheck, ShieldOff, KeyRound, QrCode, Eye, EyeOff, CheckCircle, Loader2, X, UserPlus, Users } from 'lucide-react';
-import api from '../lib/api';
+import api, { fmt } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 
@@ -263,7 +263,7 @@ export default function SecurityPage() {
             </div>
             <div>
               <div className="text-xs text-ink-400 mb-0.5">Last Login</div>
-              <div className="text-ink-700">{lastLogin ? new Date(lastLogin).toLocaleString('en-IN') : 'N/A'}</div>
+              <div className="text-ink-700">{lastLogin ? fmt.datetime(lastLogin) : 'N/A'}</div>
             </div>
             <div>
               <div className="text-xs text-ink-400 mb-0.5">2-Step Verification</div>
