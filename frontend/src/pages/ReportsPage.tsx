@@ -97,7 +97,7 @@ export default function ReportsPage() {
                   <Tooltip 
                     cursor={{ fill: '#f3f4f6' }}
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(val: number) => [fmt.currency(val), 'Sales']}
+                    formatter={(val: any) => [fmt.currency(Number(val) || 0), 'Sales']}
                   />
                   <Bar dataKey="sales" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
                 </BarChart>
@@ -129,7 +129,7 @@ export default function ReportsPage() {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(val: number) => [fmt.currency(val), 'Revenue']}
+                      formatter={(val: any) => [fmt.currency(Number(val) || 0), 'Revenue']}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     />
                   </PieChart>
