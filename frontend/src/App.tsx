@@ -12,6 +12,7 @@ import HistoryPage from './pages/HistoryPage';
 import PartiesPage from './pages/PartiesPage';
 import SecurityPage from './pages/SecurityPage';
 import StaffPage from './pages/StaffPage';
+import ReportsPage from './pages/ReportsPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { accessToken } = useAuth();
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/manufacturing" element={<PrivateRoute><ManufacturingPage /></PrivateRoute>} />
       <Route path="/history"     element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
       <Route path="/parties"     element={<PrivateRoute><PartiesPage /></PrivateRoute>} />
+      <Route path="/reports"     element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
       <Route path="/security"    element={<PrivateRoute><SecurityPage /></PrivateRoute>} />
       <Route path="/staff"       element={<PrivateRoute><StaffPage /></PrivateRoute>} />
       <Route path="*"            element={<Navigate to="/" replace />} />
