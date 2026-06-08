@@ -10,6 +10,7 @@ import productsRouter from './routes/products';
 import ordersRouter from './routes/orders';
 import manufacturingRouter from './routes/manufacturing';
 import miscRouter from './routes/misc';
+import analyticsRouter from './routes/analytics';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -86,6 +87,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/manufacturing', manufacturingRouter);
+app.use('/api/analytics', analyticsRouter);
 app.use('/api', miscRouter);
 
 // ─── Health ──────────────────────────────────────────────────────────────────
