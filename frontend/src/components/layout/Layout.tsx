@@ -62,14 +62,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
           </NavLink>
           {role === 'admin' && (
-            <NavLink
-              to="/staff"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <Users size={17} />
-              <span>Staff Management</span>
-            </NavLink>
+            <>
+              <NavLink
+                to="/reports"
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <LayoutDashboard size={17} />
+                <span>Reports & Analytics</span>
+              </NavLink>
+              <NavLink
+                to="/staff"
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Users size={17} />
+                <span>Staff Management</span>
+              </NavLink>
+            </>
           )}
         </div>
       </nav>
