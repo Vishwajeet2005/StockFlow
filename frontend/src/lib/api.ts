@@ -157,10 +157,16 @@ export interface DashboardData {
 export const fmt = {
   currency: (n: number) =>
     '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-  date: (s: string) =>
-    s ? new Date(s).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—',
-  datetime: (s: string) =>
-    s ? new Date(s).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—',
+  date: (s: string) => {
+    if (!s) return '—';
+    const dateStr = s.includes('T') ? s : s.replace(' ', 'T') + 'Z';
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  },
+  datetime: (s: string) => {
+    if (!s) return '—';
+    const dateStr = s.includes('T') ? s : s.replace(' ', 'T') + 'Z';
+    return new Date(dateStr).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  },
   qty: (n: number) => Number(n || 0).toLocaleString('en-IN'),
 };
 
