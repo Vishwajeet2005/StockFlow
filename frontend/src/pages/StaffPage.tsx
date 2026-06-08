@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Users, UserPlus, Loader2, Eye, EyeOff, Trash2 } from 'lucide-react';
-import api from '../lib/api';
+import api, { fmt } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
@@ -100,10 +100,10 @@ export default function StaffPage() {
                 <div key={s.id} className="flex justify-between items-center bg-surface-1 p-3 rounded-lg border border-surface-2 text-sm">
                   <div>
                     <div className="font-medium text-ink-900">{s.username}</div>
-                    <div className="text-xs text-ink-400">Added {new Date(s.created_at).toLocaleDateString()}</div>
+                    <div className="text-xs text-ink-400">Added {fmt.date(s.created_at)}</div>
                   </div>
                   <div className="text-xs text-ink-500 text-right">
-                    <div className="font-medium text-ink-700 mb-1.5">{s.last_login ? new Date(s.last_login).toLocaleString('en-IN') : 'Never'}</div>
+                    <div className="font-medium text-ink-700 mb-1.5">{s.last_login ? fmt.datetime(s.last_login) : 'Never'}</div>
                     <button className="btn btn-ghost btn-sm p-1 h-auto text-red-500 hover:bg-red-50 ml-auto" onClick={() => setConfirmDelete(s)} title="Remove Staff">
                       <Trash2 size={14} />
                     </button>
