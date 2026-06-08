@@ -70,11 +70,13 @@ npm run start:desktop
 The standalone Windows `.exe` is generated via `npm run package:exe`. You can download the pre-built portable version from the GitHub Releases section.
 
 
-### Login credentials
-| Field    | Value       |
-|----------|-------------|
-| Username | `admin`     | Or register your own company workspace |
-| Password | `Admin@123` | |
+### Login & Registration
+
+There are no default credentials seeded in the database. 
+To get started:
+1. Open the app
+2. Click **"Register your workspace"**
+3. Create your company and initial Admin account.
 
 ---
 
