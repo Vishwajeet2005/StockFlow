@@ -13,7 +13,10 @@ services:
       JWT_SECRET: ${JWT_SECRET:-CHANGE_THIS_TO_A_SECURE_RANDOM_64_CHAR_STRING}
       REFRESH_SECRET: ${REFRESH_SECRET:-CHANGE_THIS_REFRESH_SECRET_64_CHAR_STRING}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
-      DB_PATH: /app/data/inventory.db
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/stockflow?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - db_data:/app/data
     networks:
@@ -44,8 +47,30 @@ services:
       timeout: 10s
       retries: 3
 
+  db:
+    image: postgres:15-alpine
+    container_name: stockflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stockflow
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - stockflow_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   db_data:
+    driver: local
+  pg_data:
     driver: local
 
 networks:
