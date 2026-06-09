@@ -1,15 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-change-in-prod';
-export const REFRESH_SECRET = process.env.REFRESH_SECRET || 'dev-refresh-secret-change-in-prod';
+export const JWT_SECRET = process.env.JWT_SECRET;
+export const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
-// Warn clearly in development if defaults are used
-if (!process.env.JWT_SECRET) {
-  console.warn('⚠️  JWT_SECRET not set. Using insecure default — OK for dev only, NEVER in production.');
-}
-if (!process.env.REFRESH_SECRET) {
-  console.warn('⚠️  REFRESH_SECRET not set. Using insecure default — OK for dev only, NEVER in production.');
+if (!JWT_SECRET || !REFRESH_SECRET) {
+  console.error('❌ FATAL: JWT_SECRET and REFRESH_SECRET must be set. Exiting.');
+  process.exit(1);
 }
 
 export interface AuthRequest extends Request {
