@@ -13,6 +13,7 @@ import PartiesPage from './pages/PartiesPage';
 import SecurityPage from './pages/SecurityPage';
 import StaffPage from './pages/StaffPage';
 import ReportsPage from './pages/ReportsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { accessToken } = useAuth();
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/"            element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
       <Route path="/products"    element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
       <Route path="/sales"       element={<PrivateRoute><SalesPage /></PrivateRoute>} />

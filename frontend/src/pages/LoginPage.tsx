@@ -321,9 +321,19 @@ export default function LoginPage() {
           </div>
         )}
 
-        <p className="text-xs text-ink-300 text-center mt-5">
-          Enterprise Grade Inventory Management System
-        </p>
+        <div className="mt-5 text-center">
+          <p className="text-xs text-ink-300">
+            Enterprise Grade Inventory Management System
+          </p>
+          <div className="mt-2">
+            <button 
+              onClick={() => navigate('/privacy')} 
+              className="text-xs text-brand-500 hover:text-brand-600 hover:underline transition-colors bg-transparent border-none cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
