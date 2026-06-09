@@ -1,0 +1,137 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id         Int       @id @default(autoincrement())
+  name       String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  users      User[]
+  products   Product[]
+  customers  Customer[]
+  suppliers  Supplier[]
+  orders     Order[]
+  batches    ManufacturingBatch[]
+
+  @@map("companies")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  companyId      Int       @map("company_id")
+  username       String    @unique
+  password       String
+  role           String    @default("staff")
+  totpSecret     String?   @map("totp_secret")
+  totpEnabled    Boolean   @default(false) @map("totp_enabled")
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  lastLogin      DateTime? @map("last_login")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  refreshTokens  RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  tokenHash  String   @unique @map("token_hash")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Product {
+  companyId    Int      @map("company_id")
+  productCode  String   @map("product_code")
+  name         String
+  description  String?  @default("")
+  weight       Float    @default(0)
+  price        Float    @default(0)
+  quantity     Float    @default(0)
+  lastUpdated  DateTime @default(now()) @map("last_updated")
+
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, productCode])
+  @@map("products")
+}
+
+model Customer {
+  companyId   Int      @map("company_id")
+  customerId  String   @map("customer_id")
+  name        String
+  email       String?  @default("")
+  phone       String?  @default("")
+  address     String?  @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, customerId])
+  @@map("customers")
+}
+
+model Supplier {
+  companyId   Int      @map("company_id")
+  supplierId  String   @map("supplier_id")
+  name        String
+  email       String?  @default("")
+  phone       String?  @default("")
+  address     String?  @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, supplierId])
+  @@map("suppliers")
+}
+
+model Order {
+  companyId   Int      @map("company_id")
+  orderId     String   @map("order_id")
+  type        String
+  partyId     String?  @default("") @map("party_id")
+  partyName   String?  @default("") @map("party_name")
+  products    String   @default("[]") // JSON string
+  status      String   @default("quotation")
+  date        DateTime @default(now())
+  notes       String?  @default("")
+  totalAmount Float    @default(0) @map("total_amount")
+  lastUpdated DateTime @default(now()) @map("last_updated")
+
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, orderId])
+  @@map("orders")
+}
+
+model ManufacturingBatch {
+  companyId    Int       @map("company_id")
+  batchId      String    @map("batch_id")
+  batchNumber  String    @map("batch_number")
+  rawMaterials String    @default("[]") @map("raw_materials") // JSON string
+  output       String    @default("[]") // JSON string
+  status       String    @default("in_progress")
+  notes        String?   @default("")
+  startDate    DateTime  @default(now()) @map("start_date")
+  endDate      DateTime? @map("end_date")
+  lastUpdated  DateTime  @default(now()) @map("last_updated")
+
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, batchId])
+  @@map("manufacturing")
+}
