@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export const JWT_SECRET = process.env.JWT_SECRET;
-export const REFRESH_SECRET = process.env.REFRESH_SECRET;
+export const JWT_SECRET = process.env.JWT_SECRET as string;
+export const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
 
 if (!JWT_SECRET || !REFRESH_SECRET) {
   console.error('❌ FATAL: JWT_SECRET and REFRESH_SECRET must be set. Exiting.');
