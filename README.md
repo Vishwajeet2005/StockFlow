@@ -16,30 +16,30 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **StockFlow** is a comprehensive, full-stack inventory and supply chain management platform designed for modern SMEs. Built with a focus on **security**, **scalability**, and **user experience**, StockFlow provides true multi-tenant architecture, allowing multiple companies to operate isolated workspaces within a single deployment.
 
 Whether accessed via the web or the native Windows companion app, StockFlow orchestrates the entire lifecycle of products—from raw material purchasing and manufacturing batch tracking, to sales order fulfillment and real-time analytics.
 
-🌐 **Live Demo:** [https://stockflow-obza.onrender.com](https://stockflow-obza.onrender.com)
+**Live Demo:** [https://stockflow-obza.onrender.com](https://stockflow-obza.onrender.com)
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 🏢 **Multi-Tenant Architecture**: True data isolation. Multiple companies can register and manage their own isolated workspaces seamlessly.
-- 🔐 **Role-Based Access Control (RBAC)**: Distinct `Admin` and `Staff` roles ensure granular permission controls. Staff members have restricted access (e.g., restricted from deleting records or viewing financial reports).
-- 📦 **End-to-End Order Lifecycle**: 
-  - **Sales Orders**: Quotation → Packing → Dispatched (Auto-deducts stock) → Completed.
-  - **Purchase Orders**: Quotation Received → Unpaid → Paid → Completed (Auto-adds stock).
-- 🏭 **Manufacturing & WIP**: Create manufacturing batches that automatically deduct raw materials and add finished goods to inventory upon completion.
-- 📊 **Real-Time Analytics**: Interactive, visual dashboards (via Recharts) displaying sales trends, top-selling products, revenue breakdowns, and low-stock alerts.
-- 🛡️ **Zero-Trust Security Model**: Advanced security featuring TOTP 2-Factor Authentication (Google Authenticator/Authy), JWT rotation, strict rate limiting, and bcrypt password hashing.
+- **Multi-Tenant Architecture**: True data isolation. Multiple companies can register and manage their own isolated workspaces seamlessly.
+- **Role-Based Access Control (RBAC)**: Distinct `Admin` and `Staff` roles ensure granular permission controls. Staff members have restricted access (e.g., restricted from deleting records or viewing financial reports).
+- **End-to-End Order Lifecycle**: 
+  - **Sales Orders**: Quotation -> Packing -> Dispatched (Auto-deducts stock) -> Completed.
+  - **Purchase Orders**: Quotation Received -> Unpaid -> Paid -> Completed (Auto-adds stock).
+- **Manufacturing & WIP**: Create manufacturing batches that automatically deduct raw materials and add finished goods to inventory upon completion.
+- **Real-Time Analytics**: Interactive, visual dashboards (via Recharts) displaying sales trends, top-selling products, revenue breakdowns, and low-stock alerts.
+- **Zero-Trust Security Model**: Advanced security featuring TOTP 2-Factor Authentication (Google Authenticator/Authy), JWT rotation, strict rate limiting, and bcrypt password hashing.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 StockFlow is built on a modern, robust, and scalable technology stack:
 
@@ -54,7 +54,7 @@ StockFlow is built on a modern, robust, and scalable technology stack:
 
 ---
 
-## 🛡️ Enterprise Security Posture
+## Enterprise Security Posture
 
 Security is treated as a first-class citizen in StockFlow:
 
@@ -66,7 +66,7 @@ Security is treated as a first-class citizen in StockFlow:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Option 1: Docker (Recommended for Production)
 Deploy the entire stack (Frontend, Backend, and PostgreSQL) with a single command.
@@ -119,7 +119,7 @@ npm run package:exe
 
 ---
 
-## 📁 System Architecture & Structure
+## System Architecture & Structure
 
 ```text
 inventory-management/
@@ -146,12 +146,12 @@ inventory-management/
 
 ---
 
-## 🤝 Participating Team
+## Participating Team
 - **Project**: StockFlow
 - **Developer**: Vishwajeet2005
 - **Event**: Sunmount Solutions Hackathon
 - **Category**: App/Web Development
 
 <div align="center">
-  <i>Built with ❤️ for the Sunmount Hackathon</i>
+  <i>Built for the Sunmount Hackathon</i>
 </div>
