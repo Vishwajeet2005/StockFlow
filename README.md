@@ -1,227 +1,157 @@
-# StockFlow — Inventory Management System
-**Sunmount Solutions Hackathon · App/Web Development Category**
+<div align="center">
+  <img src="https://img.icons8.com/color/96/000000/inventory-flow.png" alt="StockFlow Logo" width="80" />
+  
+  # StockFlow
+  **Enterprise-Grade Inventory & Supply Chain Management System**
+  
+  *Sunmount Solutions Hackathon · App/Web Development Category*
 
-![Status](https://img.shields.io/badge/Status-Live-success) ![Hackathon](https://img.shields.io/badge/Sunmount%20Hackathon-App%20Dev-blue) ![Stack](https://img.shields.io/badge/Stack-React%20%7C%20TypeScript%20%7C%20Docker-informational) ![Deploy](https://img.shields.io/badge/Deployed-Render-46E3B7)
-
----
-
-The application of it is deployed on render 
-
-**Description:** Full-stack inventory management system with Multi-tenant architecture, RBAC, 2FA, JWT rotation, Docker & Electron desktop app
-
-**Website:** https://stockflow-obza.onrender.com
-
-**Topics:** inventory, react, typescript, nodejs, docker, electron, 2fa, multi-tenant, rbac
-
-
-## What it does
-
-StockFlow is a full-stack web application that helps SMEs manage their entire inventory workflow:
-- **Multi-Company Architecture**: True multi-tenant isolation, allowing multiple companies to register and manage their own isolated workspaces.
-- **Role-Based Access Control (RBAC)**: Differentiate between Admin and Staff roles. Staff have limited privileges (e.g. they cannot delete items or view reports).
-- Product catalogue with live stock levels
-- Sales orders (Quotation → Packing → Dispatched → Completed)
-- Purchase orders (Quotation Received → Unpaid → Paid → Completed)
-- Manufacturing / WIP batch tracking
-- Customer & Supplier management
-- Dashboard with real-time stats and low-stock alerts
-- **Reports & Analytics**: Visual charts (via recharts) for sales trends, top-selling products, and revenue breakdowns (Admin only).
-- **2-Step Authentication (TOTP)** — Google Authenticator / Authy
-- Order history with CSV export
+  [![Status](https://img.shields.io/badge/Status-Live-success?style=for-the-badge)](https://stockflow-obza.onrender.com)
+  [![Hackathon](https://img.shields.io/badge/Sunmount%20Hackathon-App%20Dev-blue?style=for-the-badge)]()
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)]()
+  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)]()
+  [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)]()
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)]()
+</div>
 
 ---
 
-## Quick Start
+## 📖 Overview
 
-### Option A — Docker (one command, recommended)
+**StockFlow** is a comprehensive, full-stack inventory and supply chain management platform designed for modern SMEs. Built with a focus on **security**, **scalability**, and **user experience**, StockFlow provides true multi-tenant architecture, allowing multiple companies to operate isolated workspaces within a single deployment.
+
+Whether accessed via the web or the native Windows companion app, StockFlow orchestrates the entire lifecycle of products—from raw material purchasing and manufacturing batch tracking, to sales order fulfillment and real-time analytics.
+
+🌐 **Live Demo:** [https://stockflow-obza.onrender.com](https://stockflow-obza.onrender.com)
+
+---
+
+## ✨ Key Features
+
+- 🏢 **Multi-Tenant Architecture**: True data isolation. Multiple companies can register and manage their own isolated workspaces seamlessly.
+- 🔐 **Role-Based Access Control (RBAC)**: Distinct `Admin` and `Staff` roles ensure granular permission controls. Staff members have restricted access (e.g., restricted from deleting records or viewing financial reports).
+- 📦 **End-to-End Order Lifecycle**: 
+  - **Sales Orders**: Quotation → Packing → Dispatched (Auto-deducts stock) → Completed.
+  - **Purchase Orders**: Quotation Received → Unpaid → Paid → Completed (Auto-adds stock).
+- 🏭 **Manufacturing & WIP**: Create manufacturing batches that automatically deduct raw materials and add finished goods to inventory upon completion.
+- 📊 **Real-Time Analytics**: Interactive, visual dashboards (via Recharts) displaying sales trends, top-selling products, revenue breakdowns, and low-stock alerts.
+- 🛡️ **Zero-Trust Security Model**: Advanced security featuring TOTP 2-Factor Authentication (Google Authenticator/Authy), JWT rotation, strict rate limiting, and bcrypt password hashing.
+
+---
+
+## 🛠️ Technology Stack
+
+StockFlow is built on a modern, robust, and scalable technology stack:
+
+| Category | Technologies |
+|---|---|
+| **Frontend** | React 18, TypeScript, Vite 8, Tailwind CSS, Zustand, React Router v6, Recharts |
+| **Backend** | Node.js 20, Express.js, TypeScript |
+| **Database** | PostgreSQL, Prisma ORM |
+| **Security** | JSON Web Tokens (JWT), Speakeasy (TOTP 2FA), Bcrypt (Cost 12), Helmet, Express Rate Limit |
+| **DevOps** | Docker, Docker Compose, NGINX, Render (Cloud Deployment) |
+| **Desktop App**| Electron.js (Windows Native Client) |
+
+---
+
+## 🛡️ Enterprise Security Posture
+
+Security is treated as a first-class citizen in StockFlow:
+
+- **2-Factor Authentication (TOTP)**: RFC 6238 compliant. Setup via QR code scanning compatible with any authenticator app.
+- **Advanced Session Management**: Short-lived JWT access tokens (15-minute expiry) paired with 64-byte random, SHA-256 hashed refresh tokens that rotate on every use.
+- **Brute Force Protection**: Account lockout after 5 incorrect password attempts (15-minute lockout).
+- **Rate Limiting**: Strict API rate limiting (10 login attempts / 15 mins, 200 API calls / min) to prevent DoS attacks.
+- **Hardened HTTP Headers**: Implemented via Helmet (X-Frame-Options, HSTS, XSS protection, strict CORS).
+
+---
+
+## 🚀 Getting Started
+
+### Option 1: Docker (Recommended for Production)
+Deploy the entire stack (Frontend, Backend, and PostgreSQL) with a single command.
+
 ```bash
-cd inventory-management
-bash deploy.sh
-# Open http://localhost
+git clone https://github.com/Vishwajeet2005/StockFlow.git
+cd StockFlow/inventory-management
+
+# Launch the entire stack via Docker Compose
+docker-compose up -d --build
+
+# The app will be available at http://localhost
 ```
 
-### Option B — Local (Node.js)
+### Option 2: Local Development Setup
+Run the environment natively using Node.js.
+
 ```bash
 cd inventory-management
 
-# Install dependencies
-cd backend  && npm install && cd ..
+# 1. Install Dependencies
+cd backend && npm install && cd ..
 cd frontend && npm install && cd ..
 
-# Terminal 1: Backend
-cd backend && cp .env.example .env && npm run dev
+# 2. Setup Environment Variables
+# Copy .env.example to .env in the backend folder and configure your PostgreSQL DATABASE_URL
 
-# Terminal 2: Frontend
-cd frontend && npm run dev
+# 3. Start Backend (Terminal 1)
+cd backend
+npm run dev
+
+# 4. Start Frontend (Terminal 2)
+cd frontend
+npm run dev
 
 # Open http://localhost:5173
 ```
 
-### Option C — Desktop App (Windows 10/11)
-StockFlow now features a native Windows companion app built with Electron.
+### Option 3: Desktop App (Windows Native)
+StockFlow includes a native Windows desktop client built with Electron.
 
-**To run the desktop client locally (Dev Mode):**
 ```bash
+# To run the desktop client in development mode:
 cd inventory-management/frontend
 npm run start:desktop
+
+# To package the standalone Windows .exe:
+npm run package:exe
 ```
 
-**Physical Release:**
-The standalone Windows `.exe` is generated via `npm run package:exe`. You can download the pre-built portable version from the GitHub Releases section.
-
-
-### Login & Registration
-
-There are no default credentials seeded in the database. 
-To get started:
-1. Open the app
-2. Click **"Register your workspace"**
-3. Create your company and initial Admin account.
-
 ---
 
-## Tech Stack
+## 📁 System Architecture & Structure
 
-| Layer       | Technology                                |
-|-------------|-------------------------------------------|
-| Frontend    | React 18, TypeScript, Vite, Tailwind CSS  |
-| State       | Zustand, React Router v6, Axios           |
-| Backend     | Node.js 20, Express, TypeScript           |
-| Database    | SQLite (sql.js — pure JS, zero native deps)|
-| Auth        | JWT access tokens + refresh token rotation|
-| 2FA         | TOTP via speakeasy + QR code setup        |
-| Security    | helmet, express-rate-limit, bcrypt (cost 12)|
-| Deployment  | Docker, docker-compose, nginx             |
-
----
-
-## Security Features
-
-| Feature              | Detail                                             |
-|----------------------|----------------------------------------------------|
-| 2FA (TOTP)           | RFC 6238, scan QR with any authenticator app       |
-| Password hashing     | bcrypt cost-12                                     |
-| Access tokens        | JWT, 15-minute expiry                              |
-| Refresh tokens       | 64-byte random, SHA-256 hashed, rotated on every use|
-| Account lockout      | 5 wrong passwords → locked 15 minutes             |
-| Rate limiting        | 10 login attempts / 15 min, 300 API calls / min   |
-| Security headers     | helmet (X-Frame-Options, HSTS, XSS protection)    |
-
----
-
-## Core Workflows (tested & working)
-
-1. **Sales Order** — create → packing → dispatch (auto-deducts stock) → complete
-2. **Purchase Order** — create → unpaid → paid → complete (auto-adds stock)
-3. **Manufacturing** — create batch (deducts raw materials) → complete (adds output products)
-4. **2FA Setup** — Security page → Enable → scan QR → enter 6-digit code → enabled
-
----
-
-## Project Structure
-
-```
+```text
 inventory-management/
-├── README.md
-├── deploy.sh               ← Docker one-command deploy
-├── start.sh                ← Local one-command start
-├── docker-compose.yml
-├── .env.example
+├── deploy.sh               # Docker deployment script
+├── docker-compose.yml      # Multi-container orchestration (DB, API, Web)
 │
-├── backend/
-│   ├── Dockerfile
+├── backend/                # Node.js / Express API
+│   ├── prisma/             # Prisma ORM Schema & Migrations
 │   ├── src/
-│   │   ├── index.ts        ← Express server (helmet, rate-limit, CORS)
-│   │   ├── db.ts           ← sql.js database + seed data
-│   │   ├── middleware/
-│   │   │   └── auth.ts     ← JWT middleware
-│   │   └── routes/
-│   │       ├── auth.ts     ← Login, 2FA setup/enable/disable, refresh, change-password
-│   │       ├── products.ts
-│   │       ├── orders.ts   ← Sales + Purchase with status flow
-│   │       ├── manufacturing.ts
-│   │       └── misc.ts     ← Customers, suppliers, dashboard
+│   │   ├── index.ts        # Server entry point & security middleware
+│   │   ├── db.ts           # PostgreSQL connection handler
+│   │   ├── middleware/     # JWT authentication middleware
+│   │   └── routes/         # RESTful API Controllers (Auth, Products, Orders, etc.)
 │   └── package.json
 │
-└── frontend/
-    ├── Dockerfile
-    ├── nginx.conf
-    └── src/
-        ├── App.tsx
-        ├── lib/api.ts           ← Axios with auto token refresh
-        ├── hooks/useAuth.ts     ← Auth state (Zustand)
-        └── pages/
-            ├── LoginPage.tsx    ← 2-step login (password → TOTP code)
-            ├── SecurityPage.tsx ← 2FA setup/disable, change password
-            ├── DashboardPage.tsx
-            ├── ReportsPage.tsx  ← Charts & analytics (Admins only)
-            ├── ProductsPage.tsx
-            ├── SalesPage.tsx
-            ├── PurchasesPage.tsx
-            ├── ManufacturingPage.tsx
-            ├── HistoryPage.tsx
-            ├── PartiesPage.tsx
-            └── StaffPage.tsx    ← Staff management (Admins only)
+└── frontend/               # React SPA
+    ├── src/
+    │   ├── lib/api.ts      # Axios instance with auto token refresh interceptors
+    │   ├── hooks/useAuth.ts# Global state management via Zustand
+    │   ├── components/     # Reusable UI components
+    │   └── pages/          # Application views (Dashboard, Manufacturing, Reports, etc.)
+    └── vite.config.ts      # Vite 8 bundler configuration
 ```
 
 ---
 
-## API Reference
+## 🤝 Participating Team
+- **Project**: StockFlow
+- **Developer**: Vishwajeet2005
+- **Event**: Sunmount Solutions Hackathon
+- **Category**: App/Web Development
 
-### Auth
-| Method | Endpoint                  | Description                    |
-|--------|---------------------------|--------------------------------|
-| POST   | /api/auth/register        | Register new company & admin   |
-| POST   | /api/auth/login           | Step 1: password check         |
-| POST   | /api/auth/verify-2fa      | Step 2: TOTP code verification |
-| POST   | /api/auth/refresh         | Rotate refresh token           |
-| POST   | /api/auth/logout          | Revoke refresh token           |
-| GET    | /api/auth/me              | Get current user profile       |
-| GET    | /api/auth/staff           | List all staff (Admin only)    |
-| POST   | /api/auth/staff           | Create staff (Admin only)      |
-| DELETE | /api/auth/staff/:id       | Delete staff (Admin only)      |
-| POST   | /api/auth/2fa/setup       | Generate TOTP secret + QR code |
-| POST   | /api/auth/2fa/enable      | Confirm and enable 2FA         |
-| POST   | /api/auth/2fa/disable     | Disable 2FA (requires password + code)|
-| POST   | /api/auth/change-password | Change password (revokes sessions)|
-
-### Products
-| Method | Endpoint              | Description    |
-|--------|-----------------------|----------------|
-| GET    | /api/products         | List / search  |
-| POST   | /api/products         | Create         |
-| PUT    | /api/products/:code   | Update         |
-| DELETE | /api/products/:code   | Delete         |
-
-### Orders
-| Method | Endpoint                  | Description              |
-|--------|---------------------------|--------------------------|
-| GET    | /api/orders               | List (filter by type/status)|
-| POST   | /api/orders               | Create order             |
-| PUT    | /api/orders/:id           | Update order             |
-| PATCH  | /api/orders/:id/status    | Advance status + update inventory|
-| DELETE | /api/orders/:id           | Delete order             |
-
-### Manufacturing
-| Method | Endpoint                          | Description                      |
-|--------|-----------------------------------|----------------------------------|
-| GET    | /api/manufacturing                | List batches                     |
-| POST   | /api/manufacturing                | Create batch (deducts raw materials)|
-| PATCH  | /api/manufacturing/:id/complete   | Complete (adds output to stock)  |
-| DELETE | /api/manufacturing/:id            | Cancel batch                     |
-
-### Other
-| Method | Endpoint            | Description            |
-|--------|---------------------|------------------------|
-| GET    | /api/dashboard      | Live stats + alerts    |
-| GET    | /api/analytics      | Aggregated stats & chart data (Admin only)|
-| GET    | /api/customers      | List customers         |
-| POST   | /api/customers      | Add customer           |
-| GET    | /api/suppliers      | List suppliers         |
-| POST   | /api/suppliers      | Add supplier           |
-
----
-
-## Participant Details
-- **Project**: StockFlow — Inventory Management System
-- **Hackathon**: Sunmount Solutions — App/Web Development Category
+<div align="center">
+  <i>Built with ❤️ for the Sunmount Hackathon</i>
+</div>
