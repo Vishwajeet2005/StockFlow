@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import crypto from 'crypto';
 import { prisma } from '../db';
 import { JWT_SECRET, REFRESH_SECRET, authMiddleware, AuthRequest } from '../middleware/auth';
+import { auditLog } from '../utils/logger';
 
 const router = Router();
 const MAX_ATTEMPTS = 5;
@@ -352,6 +353,14 @@ router.delete('/staff/:id', authMiddleware, async (req: AuthRequest, res: Respon
     const existing = await prisma.user.findFirst({ where: { id: staffId, companyId: req.user!.company_id, role: 'staff' } });
     if (!existing) return res.status(404).json({ error: 'Staff account not found' });
     
+    await auditLog(
+      req.user!.company_id,
+      req.user!.id,
+      'DELETE_STAFF',
+      req.ip || '',
+      { deletedStaffId: staffId }
+    );
+
     await prisma.user.delete({ where: { id: staffId } });
     // refresh tokens are cascade deleted automatically via prisma schema
     res.json({ success: true, message: 'Staff account deleted' });

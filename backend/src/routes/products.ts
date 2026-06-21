@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { auditLog } from '../utils/logger';
 
 const router = Router();
 router.use(authMiddleware);
@@ -169,6 +170,14 @@ router.delete('/:code', async (req: AuthRequest, res: Response) => {
         }
       }
     });
+    
+    await auditLog(
+      req.user!.company_id,
+      req.user!.id,
+      'DELETE_PRODUCT',
+      req.ip,
+      { productCode: req.params.code }
+    );
     
     res.json({ success: true });
   } catch (err) {
