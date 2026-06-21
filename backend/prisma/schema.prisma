@@ -18,6 +18,7 @@ model Company {
   suppliers  Supplier[]
   orders     Order[]
   batches    ManufacturingBatch[]
+  auditLogs  AuditLog[]
 
   @@map("companies")
 }
@@ -37,6 +38,7 @@ model User {
 
   company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   refreshTokens  RefreshToken[]
+  auditLogs      AuditLog[]
 
   @@map("users")
 }
@@ -134,4 +136,19 @@ model ManufacturingBatch {
 
   @@id([companyId, batchId])
   @@map("manufacturing")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  companyId  Int      @map("company_id")
+  userId     Int?     @map("user_id")
+  action     String
+  details    String?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
 }
