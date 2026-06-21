@@ -4,6 +4,8 @@ import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { initDB } from './db';
 import authRouter from './routes/auth';
 import productsRouter from './routes/products';
@@ -11,8 +13,22 @@ import ordersRouter from './routes/orders';
 import manufacturingRouter from './routes/manufacturing';
 import miscRouter from './routes/misc';
 import analyticsRouter from './routes/analytics';
+import { errorHandler } from './middleware/errorHandler';
+
+// Initialize Sentry if DSN is provided
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      nodeProfilingIntegration(),
+    ],
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
+  });
+}
 
 const app = express();
+
 const PORT = process.env.PORT || 3001;
 // Render automatically provides RENDER_EXTERNAL_URL (e.g., https://stockflow-obza.onrender.com)
 const FRONTEND_URL = process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
@@ -108,10 +124,8 @@ app.get('*', (req, res, next) => {
 app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 
 // ─── Error handler ────────────────────────────────────────────────────────────
-app.use((err: any, _req: any, res: any, _next: any) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
-});
+Sentry.setupExpressErrorHandler(app);
+app.use(errorHandler);
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 initDB().then(() => {
