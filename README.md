@@ -35,7 +35,7 @@ Whether accessed via the web or the native Windows companion app, StockFlow orch
   - **Purchase Orders**: Quotation Received -> Unpaid -> Paid -> Completed (Auto-adds stock).
 - **Manufacturing & WIP**: Create manufacturing batches that automatically deduct raw materials and add finished goods to inventory upon completion.
 - **Real-Time Analytics**: Interactive, visual dashboards (via Recharts) displaying sales trends, top-selling products, revenue breakdowns, and low-stock alerts.
-- **Zero-Trust Security Model**: Advanced security featuring TOTP 2-Factor Authentication (Google Authenticator/Authy), JWT rotation, strict rate limiting, and bcrypt password hashing.
+- **Zero-Trust Security Model**: Advanced security featuring TOTP 2-Factor Authentication, JWT rotation, strict rate limiting, bcrypt hashing, and continuous automated security scanning (CodeQL).
 
 ---
 
@@ -62,6 +62,12 @@ Security is treated as a first-class citizen in StockFlow:
 - **Advanced Session Management**: Short-lived JWT access tokens (15-minute expiry) paired with 64-byte random, SHA-256 hashed refresh tokens that rotate on every use.
 - **Brute Force Protection**: Account lockout after 5 incorrect password attempts (15-minute lockout).
 - **Rate Limiting**: Strict API rate limiting (10 login attempts / 15 mins, 200 API calls / min) to prevent DoS attacks.
+- **Database Audit Logging**: Permanent tracking of critical system actions (deletions, modifications) with timestamp and IP address linking back to the responsible user account.
+- **Intrusion Detection & Error Masking**: Integrated with Sentry to detect and alert on anomalous activity, while a global error handler prevents stack trace leaks.
+- **Continuous Automated Security (DevSecOps)**:
+  - **CodeQL SAST**: Automated static analysis on every push/PR to detect XSS, injection loopholes, and hardcoded secrets.
+  - **Dependabot**: Automated weekly vulnerability scanning and PR generation for Node.js and Docker dependencies.
+  - **CI Gatekeeper**: GitHub Actions pipeline runs strict `npm audit` checks, failing the build immediately if high/critical vulnerabilities are introduced.
 - **Hardened HTTP Headers**: Implemented via Helmet (X-Frame-Options, HSTS, XSS protection, strict CORS).
 
 ---
