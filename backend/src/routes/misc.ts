@@ -306,4 +306,29 @@ router.get('/dashboard', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// ─── Audit Logs ──────────────────────────────────────────────────────────────
+router.get('/audit-logs', async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied: Admins only' });
+    }
+    
+    const logs = await prisma.auditLog.findMany({
+      where: { companyId: req.user!.company_id },
+      include: {
+        user: {
+          select: { username: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100 // Limit to recent 100 for performance
+    });
+    
+    res.json(logs);
+  } catch (err) {
+    console.error('Failed to fetch audit logs:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;
