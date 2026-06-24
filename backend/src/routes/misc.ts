@@ -317,7 +317,7 @@ router.get('/audit-logs', async (req: AuthRequest, res: Response) => {
       where: { companyId: req.user!.company_id },
       include: {
         user: {
-          select: { username: true, email: true }
+          select: { username: true, role: true }
         }
       },
       orderBy: { createdAt: 'desc' },

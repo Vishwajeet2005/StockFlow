@@ -207,7 +207,7 @@ export interface AuditLog {
   createdAt: string;
   user: {
     username: string;
-    email: string;
+    role: string;
   } | null;
 }
 

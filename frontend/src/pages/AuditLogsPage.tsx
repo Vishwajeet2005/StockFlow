@@ -109,7 +109,7 @@ export default function AuditLogsPage() {
                       {log.user ? (
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-gray-900">{log.user.username}</span>
-                          <span className="text-xs text-gray-500">{log.user.email}</span>
+                          <span className="text-xs text-gray-500 capitalize">{log.user.role}</span>
                         </div>
                       ) : (
                         <span className="text-sm text-gray-500 italic">System / Deleted User</span>
