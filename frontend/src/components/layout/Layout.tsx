@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingCart, Truck,
-  Wrench, History, Users, LogOut, Menu, Building2, ShieldCheck
+  Wrench, History, Users, LogOut, Menu, Building2, ShieldCheck, Activity
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -78,6 +78,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               >
                 <Users size={17} />
                 <span>Staff Management</span>
+              </NavLink>
+              <NavLink
+                to="/audit-logs"
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Activity size={17} />
+                <span>System Logs</span>
               </NavLink>
             </>
           )}
