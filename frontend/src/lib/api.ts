@@ -195,5 +195,19 @@ export const statusBadge: Record<string, string> = {
   unpaid: 'badge-red',
   paid: 'badge-purple',
   in_progress: 'badge-orange',
-  cancelled: 'badge-gray',
 };
+
+export interface AuditLog {
+  id: number;
+  companyId: number;
+  userId: number | null;
+  action: string;
+  details: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  user: {
+    username: string;
+    email: string;
+  } | null;
+}
+
