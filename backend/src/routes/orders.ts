@@ -1,6 +1,8 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { z } from 'zod';
+import { validateData } from '../middleware/validate';
 import { auditLog } from '../utils/logger';
 
 const router = Router();
@@ -9,7 +11,15 @@ router.use(authMiddleware);
 const SALE_STATUSES = ['quotation', 'packing', 'dispatched', 'completed'];
 const PURCHASE_STATUSES = ['quotation_received', 'unpaid', 'paid', 'completed'];
 
-router.get('/', async (req: AuthRequest, res: Response) => {
+const getOrdersSchema = z.object({
+  query: z.object({
+    type: z.enum(['sale', 'purchase']).optional(),
+    status: z.string().optional(),
+    search: z.string().optional()
+  })
+});
+
+router.get('/', validateData(getOrdersSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { type, status, search } = req.query;
     
@@ -76,10 +86,26 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post('/', async (req: AuthRequest, res: Response) => {
+const productItemSchema = z.object({
+  product_code: z.string(),
+  name: z.string().optional(),
+  price: z.number().nonnegative(),
+  quantity: z.number().int().positive()
+});
+
+const createOrderSchema = z.object({
+  body: z.object({
+    type: z.enum(['sale', 'purchase']),
+    party_id: z.string().optional(),
+    party_name: z.string().optional(),
+    products: z.array(productItemSchema).min(1, 'Order must contain at least one product'),
+    notes: z.string().optional()
+  })
+});
+
+router.post('/', validateData(createOrderSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { type, party_id, party_name, products, notes } = req.body;
-    if (!type || !products || !Array.isArray(products)) return res.status(400).json({ error: 'type and products array required' });
     
     const totalAmount = products.reduce((s: number, p: any) => s + (p.price * p.quantity), 0);
     const orderId = `${type === 'sale' ? 'SO' : 'PO'}-${Date.now().toString(36).toUpperCase()}`;
@@ -115,7 +141,16 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+const updateOrderSchema = z.object({
+  body: z.object({
+    party_id: z.string().optional(),
+    party_name: z.string().optional(),
+    products: z.array(productItemSchema).optional(),
+    notes: z.string().optional()
+  })
+});
+
+router.put('/:id', validateData(updateOrderSchema), async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.order.findUnique({
       where: {
@@ -165,7 +200,13 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.patch('/:id/status', async (req: AuthRequest, res: Response) => {
+const updateOrderStatusSchema = z.object({
+  body: z.object({
+    status: z.string().optional()
+  })
+});
+
+router.patch('/:id/status', validateData(updateOrderStatusSchema), async (req: AuthRequest, res: Response) => {
   try {
     const order = await prisma.order.findUnique({
       where: {
