@@ -2,6 +2,8 @@ import { Router, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../db';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { z } from 'zod';
+import { validateData } from '../middleware/validate';
 
 const router = Router();
 router.use(authMiddleware);
@@ -18,7 +20,13 @@ const parse = (b: any) => ({
   output: JSON.parse(b.output || '[]')
 });
 
-router.get('/', async (req: AuthRequest, res: Response) => {
+const getBatchesSchema = z.object({
+  query: z.object({
+    status: z.string().optional()
+  })
+});
+
+router.get('/', validateData(getBatchesSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.query;
     
@@ -57,10 +65,23 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post('/', async (req: AuthRequest, res: Response) => {
+const bomItemSchema = z.object({
+  product_code: z.string().min(1),
+  quantity: z.number().int().positive()
+});
+
+const createBatchSchema = z.object({
+  body: z.object({
+    batch_number: z.string().min(1, 'Batch number is required'),
+    raw_materials: z.array(bomItemSchema).min(1, 'Raw materials required'),
+    output: z.array(bomItemSchema).min(1, 'Output required'),
+    notes: z.string().optional()
+  })
+});
+
+router.post('/', validateData(createBatchSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { batch_number, raw_materials, output, notes } = req.body;
-    if (!batch_number || !raw_materials || !output) return res.status(400).json({ error: 'batch_number, raw_materials, and output required' });
 
     const batch_id = uuidv4();
     
@@ -114,7 +135,14 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+const updateBatchSchema = z.object({
+  body: z.object({
+    batch_number: z.string().min(1).optional(),
+    notes: z.string().optional()
+  })
+});
+
+router.put('/:id', validateData(updateBatchSchema), async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.manufacturingBatch.findUnique({
       where: {
