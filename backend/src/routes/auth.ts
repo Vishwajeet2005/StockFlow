@@ -93,7 +93,7 @@ const registerSchema = z.object({
   body: z.object({
     company_name: z.string().min(1, 'Company name is required'),
     username: z.string().min(1, 'Username is required'),
-    password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
   })
 });
 
@@ -410,7 +410,7 @@ router.delete('/staff/:id', authMiddleware, async (req: AuthRequest, res: Respon
 const changePasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string().min(1, 'Current password required'),
-    newPassword: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
   })
 });
 
