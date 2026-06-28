@@ -1,6 +1,8 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { z } from 'zod';
+import { validateData } from '../middleware/validate';
 
 const router = Router();
 router.use(authMiddleware);
@@ -42,10 +44,19 @@ router.get('/customers/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post('/customers', async (req: AuthRequest, res: Response) => {
+const createCustomerSchema = z.object({
+  body: z.object({
+    customer_id: z.string().min(1, 'customer_id required'),
+    name: z.string().min(1, 'name required'),
+    email: z.string().email('Invalid email').optional().or(z.literal('')),
+    phone: z.string().optional(),
+    address: z.string().optional()
+  })
+});
+
+router.post('/customers', validateData(createCustomerSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { customer_id, name, email, phone, address } = req.body;
-    if (!customer_id || !name) return res.status(400).json({ error: 'customer_id and name required' });
     
     const existing = await prisma.customer.findUnique({
       where: {
@@ -76,7 +87,16 @@ router.post('/customers', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.put('/customers/:id', async (req: AuthRequest, res: Response) => {
+const updateCustomerSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).optional(),
+    email: z.string().email('Invalid email').optional().or(z.literal('')),
+    phone: z.string().optional(),
+    address: z.string().optional()
+  })
+});
+
+router.put('/customers/:id', validateData(updateCustomerSchema), async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.customer.findUnique({
       where: {
@@ -160,10 +180,19 @@ router.get('/suppliers/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post('/suppliers', async (req: AuthRequest, res: Response) => {
+const createSupplierSchema = z.object({
+  body: z.object({
+    supplier_id: z.string().min(1, 'supplier_id required'),
+    name: z.string().min(1, 'name required'),
+    email: z.string().email('Invalid email').optional().or(z.literal('')),
+    phone: z.string().optional(),
+    address: z.string().optional()
+  })
+});
+
+router.post('/suppliers', validateData(createSupplierSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { supplier_id, name, email, phone, address } = req.body;
-    if (!supplier_id || !name) return res.status(400).json({ error: 'supplier_id and name required' });
     
     const existing = await prisma.supplier.findUnique({
       where: {
@@ -194,7 +223,16 @@ router.post('/suppliers', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.put('/suppliers/:id', async (req: AuthRequest, res: Response) => {
+const updateSupplierSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).optional(),
+    email: z.string().email('Invalid email').optional().or(z.literal('')),
+    phone: z.string().optional(),
+    address: z.string().optional()
+  })
+});
+
+router.put('/suppliers/:id', validateData(updateSupplierSchema), async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.supplier.findUnique({
       where: {
