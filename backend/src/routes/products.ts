@@ -1,12 +1,20 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { z } from 'zod';
+import { validateData } from '../middleware/validate';
 import { auditLog } from '../utils/logger';
 
 const router = Router();
 router.use(authMiddleware);
 
-router.get('/', async (req: AuthRequest, res: Response) => {
+const getProductsSchema = z.object({
+  query: z.object({
+    search: z.string().optional()
+  })
+});
+
+router.get('/', validateData(getProductsSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { search } = req.query;
     
@@ -63,10 +71,20 @@ router.get('/:code', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post('/', async (req: AuthRequest, res: Response) => {
+const createProductSchema = z.object({
+  body: z.object({
+    product_code: z.string().min(1, 'Product code is required'),
+    name: z.string().min(1, 'Name is required'),
+    description: z.string().optional(),
+    weight: z.number().nonnegative().optional(),
+    price: z.number().nonnegative('Price must be non-negative'),
+    quantity: z.number().int().nonnegative().optional()
+  })
+});
+
+router.post('/', validateData(createProductSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { product_code, name, description, weight, price, quantity } = req.body;
-    if (!product_code || !name || price === undefined) return res.status(400).json({ error: 'product_code, name, and price are required' });
     
     const existing = await prisma.product.findUnique({
       where: {
@@ -103,7 +121,17 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.put('/:code', async (req: AuthRequest, res: Response) => {
+const updateProductSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).optional(),
+    description: z.string().optional(),
+    weight: z.number().nonnegative().optional(),
+    price: z.number().nonnegative().optional(),
+    quantity: z.number().int().nonnegative().optional()
+  })
+});
+
+router.put('/:code', validateData(updateProductSchema), async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.product.findUnique({
       where: {
