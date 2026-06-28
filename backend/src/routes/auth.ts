@@ -6,6 +6,8 @@ import QRCode from 'qrcode';
 import crypto from 'crypto';
 import { prisma } from '../db';
 import { JWT_SECRET, REFRESH_SECRET, authMiddleware, AuthRequest } from '../middleware/auth';
+import { z } from 'zod';
+import { validateData } from '../middleware/validate';
 import { auditLog } from '../utils/logger';
 
 const router = Router();
@@ -35,11 +37,17 @@ async function generateTokens(userId: number, username: string, companyId: numbe
   return { accessToken, refreshToken };
 }
 
+const loginSchema = z.object({
+  body: z.object({
+    username: z.string().min(1, 'Username is required'),
+    password: z.string().min(1, 'Password is required'),
+  })
+});
+
 // ─── Step 1: Login (password check) ────────────────────────────────────────
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', validateData(loginSchema), async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
@@ -81,17 +89,18 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
+const registerSchema = z.object({
+  body: z.object({
+    company_name: z.string().min(1, 'Company name is required'),
+    username: z.string().min(1, 'Username is required'),
+    password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character'),
+  })
+});
+
 // ─── Registration (New Company) ──────────────────────────────────────────────
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', validateData(registerSchema), async (req: Request, res: Response) => {
   try {
     const { company_name, username, password } = req.body;
-    if (!company_name || !username || !password) return res.status(400).json({ error: 'Company name, username, and password required' });
-
-    // Enforce strong password policy
-    const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-    if (!strongPassword.test(password)) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character' });
-    }
 
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) return res.status(400).json({ error: 'Username already exists' });
@@ -125,11 +134,17 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 });
 
+const verify2faSchema = z.object({
+  body: z.object({
+    partialToken: z.string().min(1, 'partialToken required'),
+    code: z.string().min(1, 'code required'),
+  })
+});
+
 // ─── Step 2: Verify TOTP ────────────────────────────────────────────────────
-router.post('/verify-2fa', async (req: Request, res: Response) => {
+router.post('/verify-2fa', validateData(verify2faSchema), async (req: Request, res: Response) => {
   try {
     const { partialToken, code } = req.body;
-    if (!partialToken || !code) return res.status(400).json({ error: 'partialToken and code required' });
 
     let decoded: any;
     try {
@@ -161,11 +176,16 @@ router.post('/verify-2fa', async (req: Request, res: Response) => {
   }
 });
 
+const refreshSchema = z.object({
+  body: z.object({
+    refreshToken: z.string().min(1, 'Refresh token required'),
+  })
+});
+
 // ─── Refresh token ───────────────────────────────────────────────────────────
-router.post('/refresh', async (req: Request, res: Response) => {
+router.post('/refresh', validateData(refreshSchema), async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(400).json({ error: 'Refresh token required' });
 
     const tokenHash = hashToken(refreshToken);
     const stored = await prisma.refreshToken.findUnique({ where: { tokenHash } });
@@ -221,11 +241,16 @@ router.post('/2fa/setup', authMiddleware, async (req: AuthRequest, res: Response
   }
 });
 
+const enable2faSchema = z.object({
+  body: z.object({
+    code: z.string().min(1, 'TOTP code required'),
+  })
+});
+
 // ─── 2FA Enable: verify first code ──────────────────────────────────────────
-router.post('/2fa/enable', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/2fa/enable', authMiddleware, validateData(enable2faSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { code } = req.body;
-    if (!code) return res.status(400).json({ error: 'TOTP code required' });
 
     const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
     if (!user?.totpSecret) return res.status(400).json({ error: 'Run /2fa/setup first' });
@@ -248,11 +273,17 @@ router.post('/2fa/enable', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+const disable2faSchema = z.object({
+  body: z.object({
+    code: z.string().min(1, 'TOTP code required'),
+    password: z.string().min(1, 'Current password required'),
+  })
+});
+
 // ─── 2FA Disable ────────────────────────────────────────────────────────────
-router.post('/2fa/disable', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/2fa/disable', authMiddleware, validateData(disable2faSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { code, password } = req.body;
-    if (!code || !password) return res.status(400).json({ error: 'Current password and TOTP code required to disable 2FA' });
 
     const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -300,12 +331,18 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+const staffSchema = z.object({
+  body: z.object({
+    username: z.string().min(1, 'Username required'),
+    password: z.string().min(1, 'Password required'),
+  })
+});
+
 // ─── Create Staff Account (Admin only) ───────────────────────────────────────
-router.post('/staff', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/staff', authMiddleware, validateData(staffSchema), async (req: AuthRequest, res: Response) => {
   try {
     if (req.user!.role !== 'admin') return res.status(403).json({ error: 'Only Admins can create staff accounts' });
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) return res.status(400).json({ error: 'Username already exists' });
@@ -370,19 +407,17 @@ router.delete('/staff/:id', authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
+const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1, 'Current password required'),
+    newPassword: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/, 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character'),
+  })
+});
+
 // ─── Change password ─────────────────────────────────────────────────────────
-router.post('/change-password', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/change-password', authMiddleware, validateData(changePasswordSchema), async (req: AuthRequest, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
-    
-    // Enforce strong password policy
-    const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-    if (!strongPassword.test(newPassword)) {
-      return res.status(400).json({ 
-        error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character' 
-      });
-    }
 
     const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
     if (!user || !bcrypt.compareSync(currentPassword, user.password)) return res.status(401).json({ error: 'Current password is incorrect' });
