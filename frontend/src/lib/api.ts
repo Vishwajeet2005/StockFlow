@@ -151,6 +151,7 @@ export interface DashboardData {
   wipBatches: number;
   lowStock: Product[];
   recentOrders: Order[];
+  chartData: { name: string; sales: number; purchases: number }[];
 }
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
