@@ -34,8 +34,8 @@ Whether accessed via the web or the native Windows companion app, StockFlow orch
   - **Sales Orders**: Quotation -> Packing -> Dispatched (Auto-deducts stock) -> Completed.
   - **Purchase Orders**: Quotation Received -> Unpaid -> Paid -> Completed (Auto-adds stock).
 - **Manufacturing & WIP**: Create manufacturing batches that automatically deduct raw materials and add finished goods to inventory upon completion.
-- **Real-Time Analytics**: Interactive, visual dashboards (via Recharts) displaying sales trends, top-selling products, revenue breakdowns, and low-stock alerts.
-- **Zero-Trust Security Model**: Advanced security featuring TOTP 2-Factor Authentication, JWT rotation, strict rate limiting, bcrypt hashing, and continuous automated security scanning (CodeQL).
+- **Modern UI & Analytics**: Interactive, visual dashboards (via Recharts) displaying sales vs purchases trends, supported by robust features like **System/Dark Mode toggling**, pagination, and skeleton loading states for a premium user experience.
+- **Zero-Trust Security Model**: Advanced security featuring strict schema input validation (**Zod**), TOTP 2-Factor Authentication, JWT rotation, rate limiting, bcrypt hashing, and automated security scanning (CodeQL).
 
 ---
 
@@ -59,6 +59,7 @@ StockFlow is built on a modern, robust, and scalable technology stack:
 Security is treated as a first-class citizen in StockFlow:
 
 - **2-Factor Authentication (TOTP)**: RFC 6238 compliant. Setup via QR code scanning compatible with any authenticator app.
+- **Strict Schema Validation**: Bulletproof input validation for all API endpoints using Zod to prevent injection and guarantee data integrity.
 - **Advanced Session Management**: Short-lived JWT access tokens (15-minute expiry) paired with 64-byte random, SHA-256 hashed refresh tokens that rotate on every use.
 - **Brute Force Protection**: Account lockout after 5 incorrect password attempts (15-minute lockout).
 - **Rate Limiting**: Strict API rate limiting (10 login attempts / 15 mins, 200 API calls / min) to prevent DoS attacks.
