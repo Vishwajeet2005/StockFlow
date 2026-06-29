@@ -1,15 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { Plus, Search, ShoppingCart, ChevronRight, Trash2, ArrowRight } from 'lucide-react';
-import api, { Order, fmt, statusLabel, statusBadge, saleStatuses } from '../lib/api';
+import api, { Order, fmt, statusLabel, statusBadge, saleStatuses, PaginatedResponse } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import OrderForm from '../components/modules/OrderForm';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
+import Pagination from '../components/layout/Pagination';
 
 export default function SalesPage() {
   const { role } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [meta, setMeta] = useState<PaginatedResponse<Order>['meta'] | null>(null);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Order | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -19,12 +22,16 @@ export default function SalesPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/orders', { params: { type: 'sale', search: search || undefined } });
-      setOrders(data);
+      const { data } = await api.get('/orders', { params: { type: 'sale', search: search || undefined, page, limit: 20 } });
+      setOrders(data.data);
+      setMeta(data.meta);
     } finally { setLoading(false); }
-  }, [search]);
+  }, [search, page]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Reset page to 1 when search changes
+  useEffect(() => { setPage(1); }, [search]);
 
   const handleAdvance = async (order: Order) => {
     const statuses = saleStatuses;
@@ -42,7 +49,7 @@ export default function SalesPage() {
     if (!selected) return;
     try {
       await api.delete(`/orders/${selected.order_id}`);
-      setOrders(prev => prev.filter(o => o.order_id !== selected.order_id));
+      await load();
       setSelected(null); setConfirmDelete(false);
       toast.success('Order deleted');
     } catch { toast.error('Failed to delete'); }
@@ -57,7 +64,7 @@ export default function SalesPage() {
     <div className="h-full flex flex-col">
       <PageHeader
         title="Sales Orders"
-        subtitle={`${orders.length} orders`}
+        subtitle={meta ? `${meta.total} orders` : 'Loading...'}
         actions={<button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}><Plus size={15} />New Order</button>}
       />
 
@@ -87,6 +94,7 @@ export default function SalesPage() {
                 </div>
               ))}
           </div>
+          {meta && <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />}
         </div>
 
         {/* Detail */}

@@ -15,13 +15,17 @@ const getOrdersSchema = z.object({
   query: z.object({
     type: z.enum(['sale', 'purchase']).optional(),
     status: z.string().optional(),
-    search: z.string().optional()
+    search: z.string().optional(),
+    page: z.string().optional(),
+    limit: z.string().optional()
   })
 });
 
 router.get('/', validateData(getOrdersSchema), async (req: AuthRequest, res: Response) => {
   try {
-    const { type, status, search } = req.query;
+    const { type, status, search, page = '1', limit = '50' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string, 10));
+    const limitNum = Math.max(1, parseInt(limit as string, 10));
     
     let whereClause: any = { companyId: req.user!.company_id };
     
@@ -36,21 +40,34 @@ router.get('/', validateData(getOrdersSchema), async (req: AuthRequest, res: Res
       ];
     }
     
-    const orders = await prisma.order.findMany({
-      where: whereClause,
-      orderBy: { lastUpdated: 'desc' }
-    });
+    const [total, orders] = await Promise.all([
+      prisma.order.count({ where: whereClause }),
+      prisma.order.findMany({
+        where: whereClause,
+        orderBy: { lastUpdated: 'desc' },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum
+      })
+    ]);
     
-    res.json(orders.map(o => ({
-      ...o,
-      order_id: o.orderId,
-      company_id: o.companyId,
-      party_id: o.partyId,
-      party_name: o.partyName,
-      total_amount: o.totalAmount,
-      last_updated: o.lastUpdated,
-      products: JSON.parse(o.products || '[]')
-    })));
+    res.json({
+      data: orders.map(o => ({
+        ...o,
+        order_id: o.orderId,
+        company_id: o.companyId,
+        party_id: o.partyId,
+        party_name: o.partyName,
+        total_amount: o.totalAmount,
+        last_updated: o.lastUpdated,
+        products: JSON.parse(o.products || '[]')
+      })),
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

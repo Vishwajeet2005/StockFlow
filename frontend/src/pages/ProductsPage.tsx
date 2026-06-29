@@ -2,10 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { Plus, Search, Package, Edit2, Trash2, X, Save, ScanBarcode } from 'lucide-react';
 import Barcode from 'react-barcode';
-import api, { Product, fmt } from '../lib/api';
+import api, { Product, fmt, PaginatedResponse } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
 import ConfirmDialog from '../components/layout/ConfirmDialog';
+import Pagination from '../components/layout/Pagination';
 
 const empty: Omit<Product, 'last_updated'> = {
   product_code: '', name: '', description: '', weight: 0, price: 0, quantity: 0
@@ -18,6 +19,8 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
 export default function ProductsPage() {
   const { role } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [meta, setMeta] = useState<PaginatedResponse<Product>['meta'] | null>(null);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Product | null>(null);
   const [editing, setEditing] = useState(false);
@@ -31,14 +34,18 @@ export default function ProductsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/products', { params: { search: search || undefined } });
-      setProducts(data);
+      const { data } = await api.get('/products', { params: { search: search || undefined, page, limit: 20 } });
+      setProducts(data.data);
+      setMeta(data.meta);
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, page]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Reset page to 1 when search changes
+  useEffect(() => { setPage(1); }, [search]);
 
   const handleSelect = (p: Product) => {
     setSelected(p); setEditing(false); setShowAdd(false);
@@ -55,7 +62,8 @@ export default function ProductsPage() {
     setSaving(true);
     try {
       const { data } = await api.post('/products', form);
-      setProducts(prev => [...prev, data]);
+      // To keep it simple, we reload the current page after a new addition
+      await load();
       setSelected(data); setShowAdd(false);
       toast.success('Product added');
     } catch (e: any) {
@@ -78,19 +86,17 @@ export default function ProductsPage() {
     if (!selected) return;
     try {
       await api.delete(`/products/${selected.product_code}`);
-      setProducts(prev => prev.filter(p => p.product_code !== selected.product_code));
+      await load();
       setSelected(null); setConfirmDelete(false);
       toast.success('Product deleted');
     } catch { toast.error('Failed to delete'); }
   };
 
-
-
   return (
     <div className="h-full flex flex-col">
       <PageHeader
         title="Products"
-        subtitle={`${products.length} items`}
+        subtitle={meta ? `${meta.total} items` : 'Loading...'}
         actions={<button className="btn btn-primary btn-sm" onClick={handleAdd}><Plus size={15} /> Add Product</button>}
       />
 
@@ -123,6 +129,7 @@ export default function ProductsPage() {
               </div>
             ))}
           </div>
+          {meta && <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />}
         </div>
 
         {/* Detail panel */}

@@ -154,7 +154,15 @@ export interface DashboardData {
   chartData: { name: string; sales: number; purchases: number }[];
 }
 
-// ─── Formatters ───────────────────────────────────────────────────────────────
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
 export const fmt = {
   currency: (n: number) =>
     '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),

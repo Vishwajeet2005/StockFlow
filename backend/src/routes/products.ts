@@ -10,13 +10,17 @@ router.use(authMiddleware);
 
 const getProductsSchema = z.object({
   query: z.object({
-    search: z.string().optional()
+    search: z.string().optional(),
+    page: z.string().optional(),
+    limit: z.string().optional()
   })
 });
 
 router.get('/', validateData(getProductsSchema), async (req: AuthRequest, res: Response) => {
   try {
-    const { search } = req.query;
+    const { search, page = '1', limit = '50' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string, 10));
+    const limitNum = Math.max(1, parseInt(limit as string, 10));
     
     let whereClause: any = { companyId: req.user!.company_id };
     
@@ -28,18 +32,30 @@ router.get('/', validateData(getProductsSchema), async (req: AuthRequest, res: R
       ];
     }
     
-    const products = await prisma.product.findMany({
-      where: whereClause,
-      orderBy: { name: 'asc' }
-    });
+    const [total, products] = await Promise.all([
+      prisma.product.count({ where: whereClause }),
+      prisma.product.findMany({
+        where: whereClause,
+        orderBy: { name: 'asc' },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum
+      })
+    ]);
     
-    // Convert camelCase to snake_case for frontend
-    res.json(products.map(p => ({
-      ...p,
-      product_code: p.productCode,
-      company_id: p.companyId,
-      last_updated: p.lastUpdated
-    })));
+    res.json({
+      data: products.map(p => ({
+        ...p,
+        product_code: p.productCode,
+        company_id: p.companyId,
+        last_updated: p.lastUpdated
+      })),
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
