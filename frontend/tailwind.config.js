@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -21,17 +22,17 @@ export default {
           900: '#0b366e',
         },
         surface: {
-          0: '#ffffff',
-          1: '#f8f9fb',
-          2: '#f1f3f6',
-          3: '#e8ebf0',
+          0: 'var(--surface-0)',
+          1: 'var(--surface-1)',
+          2: 'var(--surface-2)',
+          3: 'var(--surface-3)',
         },
         ink: {
-          900: '#0f1117',
-          700: '#2d3348',
-          500: '#5a6272',
-          300: '#9ba3b4',
-          100: '#c8cdd8',
+          900: 'var(--ink-900)',
+          700: 'var(--ink-700)',
+          500: 'var(--ink-500)',
+          300: 'var(--ink-300)',
+          100: 'var(--ink-100)',
         },
       },
     },
