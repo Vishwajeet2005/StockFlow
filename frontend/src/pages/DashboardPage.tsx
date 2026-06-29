@@ -101,11 +101,11 @@ export default function DashboardPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--ink-400)' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--ink-400)' }} tickFormatter={(val) => \`₹\${val/1000}k\`} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--ink-400)' }} tickFormatter={(val) => `₹${val/1000}k`} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: 'var(--surface-0)', borderColor: 'var(--border-subtle)', borderRadius: '8px', color: 'var(--ink-900)' }}
                     itemStyle={{ fontSize: '13px', fontWeight: 500 }}
-                    formatter={(val: number) => [fmt.currency(val)]}
+                    formatter={(val: any) => [fmt.currency(Number(val))]}
                   />
                   <Area type="monotone" dataKey="sales" name="Sales" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
                   <Area type="monotone" dataKey="purchases" name="Purchases" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorPurchases)" />
