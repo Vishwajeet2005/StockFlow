@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
+import ThemeToggle from './ThemeToggle';
+
 const nav = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/products', icon: Package, label: 'Products' },
@@ -24,13 +26,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const handleLogout = async () => { await logout(); navigate('/login'); };
 
   const Sidebar = () => (
-    <aside className="flex flex-col h-full">
+    <aside className="flex flex-col h-full bg-surface-0">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-surface-3">
         <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center flex-shrink-0">
           <Building2 size={16} color="#fff" />
         </div>
-        <div>
-          <div className="font-semibold text-ink-900 text-sm leading-tight">{companyName || 'StockFlow'}</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-ink-900 text-sm leading-tight truncate">{companyName || 'StockFlow'}</div>
           <div className="text-xs text-ink-300">Workspace</div>
         </div>
       </div>
@@ -93,7 +95,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="p-3 border-t border-surface-3">
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg mb-2">
           <div className="w-7 h-7 bg-brand-100 rounded-full flex items-center justify-center text-brand-600 text-xs font-semibold flex-shrink-0">
             {username?.charAt(0).toUpperCase()}
           </div>
@@ -104,6 +106,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <button onClick={handleLogout} className="btn btn-ghost btn-sm p-1.5 h-auto text-ink-400 hover:text-red-500" title="Logout">
             <LogOut size={15} />
           </button>
+        </div>
+        <div className="px-1">
+          <ThemeToggle />
         </div>
       </div>
     </aside>
