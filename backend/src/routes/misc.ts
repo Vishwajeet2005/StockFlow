@@ -325,7 +325,7 @@ router.get('/dashboard', async (req: AuthRequest, res: Response) => {
       party_id: o.partyId,
       party_name: o.partyName,
       total_amount: o.totalAmount,
-      created_at: o.createdAt,
+      date: o.date,
       last_updated: o.lastUpdated,
       products: JSON.parse(o.products || '[]')
     }));
