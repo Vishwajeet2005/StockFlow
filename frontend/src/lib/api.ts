@@ -89,6 +89,7 @@ export interface Product {
   weight: number;
   price: number;
   quantity: number;
+  min_stock_level: number;
   last_updated: string;
 }
 
