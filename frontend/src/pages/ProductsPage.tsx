@@ -9,7 +9,7 @@ import ConfirmDialog from '../components/layout/ConfirmDialog';
 import Pagination from '../components/layout/Pagination';
 
 const empty: Omit<Product, 'last_updated'> = {
-  product_code: '', name: '', description: '', weight: 0, price: 0, quantity: 0
+  product_code: '', name: '', description: '', weight: 0, price: 0, quantity: 0, min_stock_level: 10
 };
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -49,7 +49,7 @@ export default function ProductsPage() {
 
   const handleSelect = (p: Product) => {
     setSelected(p); setEditing(false); setShowAdd(false);
-    setForm({ product_code: p.product_code, name: p.name, description: p.description, weight: p.weight, price: p.price, quantity: p.quantity });
+    setForm({ product_code: p.product_code, name: p.name, description: p.description, weight: p.weight, price: p.price, quantity: p.quantity, min_stock_level: p.min_stock_level });
   };
 
   const handleAdd = () => {
@@ -146,10 +146,11 @@ export default function ProductsPage() {
                   <Field label="Name *"><input className="input" placeholder="Product name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></Field>
                 </div>
                 <Field label="Description"><textarea className="input" rows={2} placeholder="Optional description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></Field>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <Field label="Weight (kg)"><input className="input" type="number" step="0.01" min="0" value={form.weight || ''} onChange={e => setForm(f => ({ ...f, weight: parseFloat(e.target.value) || 0 }))} /></Field>
                   <Field label="Price (₹) *"><input className="input" type="number" step="0.01" min="0" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></Field>
                   <Field label="Quantity"><input className="input" type="number" step="1" min="0" value={form.quantity || ''} onChange={e => setForm(f => ({ ...f, quantity: parseInt(e.target.value) || 0 }))} /></Field>
+                  <Field label="Min Stock"><input className="input" type="number" step="1" min="0" value={form.min_stock_level || ''} onChange={e => setForm(f => ({ ...f, min_stock_level: parseInt(e.target.value) || 0 }))} /></Field>
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button className="btn btn-primary btn-sm" onClick={handleSaveNew} disabled={saving}><Save size={14} /> {saving ? 'Saving…' : 'Save Product'}</button>
@@ -168,7 +169,7 @@ export default function ProductsPage() {
                   {editing ? (
                     <>
                       <button className="btn btn-primary btn-sm" onClick={handleSaveEdit} disabled={saving}><Save size={14} />{saving ? 'Saving…' : 'Save'}</button>
-                      <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(false); setForm({ product_code: selected.product_code, name: selected.name, description: selected.description, weight: selected.weight, price: selected.price, quantity: selected.quantity }); }}><X size={14} />Cancel</button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(false); setForm({ product_code: selected.product_code, name: selected.name, description: selected.description, weight: selected.weight, price: selected.price, quantity: selected.quantity, min_stock_level: selected.min_stock_level }); }}><X size={14} />Cancel</button>
                     </>
                   ) : (
                     <>
@@ -190,10 +191,11 @@ export default function ProductsPage() {
                       <Field label="Name *"><input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></Field>
                     </div>
                     <Field label="Description"><textarea className="input" rows={2} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></Field>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                       <Field label="Weight (kg)"><input className="input" type="number" step="0.01" min="0" value={form.weight || ''} onChange={e => setForm(f => ({ ...f, weight: parseFloat(e.target.value) || 0 }))} /></Field>
                       <Field label="Price (₹)"><input className="input" type="number" step="0.01" min="0" value={form.price || ''} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} /></Field>
                       <Field label="Quantity"><input className="input" type="number" step="1" min="0" value={form.quantity || ''} onChange={e => setForm(f => ({ ...f, quantity: parseInt(e.target.value) || 0 }))} /></Field>
+                      <Field label="Min Stock"><input className="input" type="number" step="1" min="0" value={form.min_stock_level || ''} onChange={e => setForm(f => ({ ...f, min_stock_level: parseInt(e.target.value) || 0 }))} /></Field>
                     </div>
                   </>
                 ) : (
@@ -202,7 +204,7 @@ export default function ProductsPage() {
                       <div><div className="text-ink-400 text-xs mb-0.5">Product Code</div><div className="font-mono font-medium text-ink-900">{selected.product_code}</div></div>
                       <div><div className="text-ink-400 text-xs mb-0.5">Name</div><div className="font-medium text-ink-900">{selected.name}</div></div>
                       <div><div className="text-ink-400 text-xs mb-0.5">Price</div><div className="font-semibold text-ink-900 text-base">{fmt.currency(selected.price)}</div></div>
-                      <div><div className="text-ink-400 text-xs mb-0.5">Stock</div><div className={`font-semibold text-base ${selected.quantity <= 10 ? 'text-red-600' : 'text-ink-900'}`}>{fmt.qty(selected.quantity)} units</div></div>
+                      <div><div className="text-ink-400 text-xs mb-0.5">Stock</div><div className={`font-semibold text-base ${selected.quantity <= selected.min_stock_level ? 'text-red-600' : 'text-ink-900'}`}>{fmt.qty(selected.quantity)} units <span className="text-xs text-ink-400 font-normal ml-1">(Min: {selected.min_stock_level})</span></div></div>
                       <div><div className="text-ink-400 text-xs mb-0.5">Weight</div><div className="text-ink-900">{selected.weight} kg</div></div>
                       <div><div className="text-ink-400 text-xs mb-0.5">Last Updated</div><div className="text-ink-900">{fmt.datetime(selected.last_updated)}</div></div>
                     </div>
