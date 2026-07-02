@@ -3,6 +3,7 @@ import { prisma } from '../db';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { z } from 'zod';
 import { validateData } from '../middleware/validate';
+import { processLowStockAlerts } from '../services/alertService';
 
 const router = Router();
 router.use(authMiddleware);
@@ -379,6 +380,21 @@ router.get('/audit-logs', async (req: AuthRequest, res: Response) => {
   } catch (err) {
     console.error('Failed to fetch audit logs:', err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ─── Manual Email Trigger ───────────────────────────────────────────────────
+router.post('/trigger-stock-alerts', async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Requires admin privileges' });
+    }
+    // Fire and forget, or await to respond with success
+    await processLowStockAlerts();
+    res.json({ success: true, message: 'Stock alerts processed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error triggering alerts' });
   }
 });
 

@@ -9,16 +9,17 @@ datasource db {
 }
 
 model Company {
-  id         Int       @id @default(autoincrement())
-  name       String
-  createdAt  DateTime  @default(now()) @map("created_at")
-  users      User[]
-  products   Product[]
-  customers  Customer[]
-  suppliers  Supplier[]
-  orders     Order[]
-  batches    ManufacturingBatch[]
-  auditLogs  AuditLog[]
+  id                Int       @id @default(autoincrement())
+  name              String
+  notificationEmail String?   @map("notification_email")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  users             User[]
+  products          Product[]
+  customers         Customer[]
+  suppliers         Supplier[]
+  orders            Order[]
+  batches           ManufacturingBatch[]
+  auditLogs         AuditLog[]
 
   @@map("companies")
 }
@@ -56,16 +57,17 @@ model RefreshToken {
 }
 
 model Product {
-  companyId    Int      @map("company_id")
-  productCode  String   @map("product_code")
-  name         String
-  description  String?  @default("")
-  weight       Float    @default(0)
-  price        Float    @default(0)
-  quantity     Float    @default(0)
-  lastUpdated  DateTime @default(now()) @map("last_updated")
+  companyId     Int      @map("company_id")
+  productCode   String   @map("product_code")
+  name          String
+  description   String?  @default("")
+  weight        Float    @default(0)
+  price         Float    @default(0)
+  quantity      Float    @default(0)
+  minStockLevel Float    @default(10) @map("min_stock_level")
+  lastUpdated   DateTime @default(now()) @map("last_updated")
 
-  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@id([companyId, productCode])
   @@map("products")

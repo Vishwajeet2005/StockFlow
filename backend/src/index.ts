@@ -14,6 +14,7 @@ import manufacturingRouter from './routes/manufacturing';
 import miscRouter from './routes/misc';
 import analyticsRouter from './routes/analytics';
 import { errorHandler } from './middleware/errorHandler';
+import { initAlertScheduler } from './services/alertService';
 
 // Initialize Sentry if DSN is provided
 if (process.env.SENTRY_DSN) {
@@ -129,12 +130,15 @@ app.use(errorHandler);
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 initDB().then(() => {
+  // Start alert scheduler
+  initAlertScheduler();
+
   app.listen(PORT, () => {
-    console.log(`🚀 StockFlow API running on http://localhost:${PORT}`);
-    console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    console.log(`   Frontend CORS allowed from: ${FRONTEND_URL}`);
   });
-}).catch(err => {
-  console.error('❌ Failed to initialize DB:', err);
+}).catch(e => {
+  console.error('❌ Failed to start server:', e);
   process.exit(1);
 });
 
