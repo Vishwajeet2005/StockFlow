@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { ShieldCheck, ShieldOff, KeyRound, QrCode, Eye, EyeOff, CheckCircle, Loader2, X, UserPlus, Users } from 'lucide-react';
+import { ShieldCheck, ShieldOff, KeyRound, QrCode, Eye, EyeOff, CheckCircle, Loader2, X, UserPlus, Users, Save } from 'lucide-react';
 import api, { fmt } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import PageHeader from '../components/layout/PageHeader';
@@ -211,10 +211,26 @@ export default function SecurityPage() {
   const [showNew, setShowNew] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [lastLogin, setLastLogin] = useState('');
+  const [notificationEmail, setNotificationEmail] = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     api.get('/auth/me').then(r => setLastLogin(r.data.last_login || '')).catch(() => {});
-  }, []);
+    if (role === 'admin') {
+      api.get('/misc/company/settings').then(r => setNotificationEmail(r.data.notificationEmail || '')).catch(() => {});
+    }
+  }, [role]);
+
+  const handleSaveEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailLoading(true);
+    try {
+      await api.put('/misc/company/settings', { notificationEmail: notificationEmail || null });
+      toast.success('Workspace settings updated');
+    } catch (e: any) {
+      toast.error(e.response?.data?.error || 'Failed to update settings');
+    } finally { setEmailLoading(false); }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -322,6 +338,32 @@ export default function SecurityPage() {
             </div>
           )}
         </div>
+
+        {/* Workspace Settings */}
+        {role === 'admin' && (
+          <div className="card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldCheck size={16} className="text-ink-400" />
+              <h3 className="font-semibold text-ink-900 text-sm">Workspace Settings</h3>
+            </div>
+            <form onSubmit={handleSaveEmail} className="space-y-4">
+              <div>
+                <label className="label">Low-Stock Notification Email</label>
+                <p className="text-xs text-ink-400 mb-2">Automated alerts will be sent to this email when any product falls below its minimum stock threshold.</p>
+                <input 
+                  className="input" 
+                  type="email" 
+                  placeholder="admin@company.com" 
+                  value={notificationEmail} 
+                  onChange={e => setNotificationEmail(e.target.value)} 
+                />
+              </div>
+              <button type="submit" className="btn btn-primary btn-sm" disabled={emailLoading}>
+                {emailLoading ? <><Loader2 size={14} className="animate-spin" />Saving…</> : <><Save size={14} />Update Settings</>}
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Change Password */}
         <div className="card p-5">
