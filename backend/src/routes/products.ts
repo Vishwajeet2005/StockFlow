@@ -47,6 +47,7 @@ router.get('/', validateData(getProductsSchema), async (req: AuthRequest, res: R
         ...p,
         product_code: p.productCode,
         company_id: p.companyId,
+        min_stock_level: p.minStockLevel,
         last_updated: p.lastUpdated
       })),
       meta: {
@@ -79,6 +80,7 @@ router.get('/:code', async (req: AuthRequest, res: Response) => {
       ...p,
       product_code: p.productCode,
       company_id: p.companyId,
+      min_stock_level: p.minStockLevel,
       last_updated: p.lastUpdated
     });
   } catch (err) {
@@ -94,13 +96,14 @@ const createProductSchema = z.object({
     description: z.string().optional(),
     weight: z.number().nonnegative().optional(),
     price: z.number().nonnegative('Price must be non-negative'),
-    quantity: z.number().int().nonnegative().optional()
+    quantity: z.number().int().nonnegative().optional(),
+    min_stock_level: z.number().nonnegative().optional()
   })
 });
 
 router.post('/', validateData(createProductSchema), async (req: AuthRequest, res: Response) => {
   try {
-    const { product_code, name, description, weight, price, quantity } = req.body;
+    const { product_code, name, description, weight, price, quantity, min_stock_level } = req.body;
     
     const existing = await prisma.product.findUnique({
       where: {
@@ -121,7 +124,8 @@ router.post('/', validateData(createProductSchema), async (req: AuthRequest, res
         description: description || '',
         weight: weight || 0,
         price,
-        quantity: quantity || 0
+        quantity: quantity || 0,
+        minStockLevel: min_stock_level || 10
       }
     });
     
@@ -129,6 +133,7 @@ router.post('/', validateData(createProductSchema), async (req: AuthRequest, res
       ...p,
       product_code: p.productCode,
       company_id: p.companyId,
+      min_stock_level: p.minStockLevel,
       last_updated: p.lastUpdated
     });
   } catch (err) {
@@ -143,7 +148,8 @@ const updateProductSchema = z.object({
     description: z.string().optional(),
     weight: z.number().nonnegative().optional(),
     price: z.number().nonnegative().optional(),
-    quantity: z.number().int().nonnegative().optional()
+    quantity: z.number().int().nonnegative().optional(),
+    min_stock_level: z.number().nonnegative().optional()
   })
 });
 
@@ -160,7 +166,7 @@ router.put('/:code', validateData(updateProductSchema), async (req: AuthRequest,
     
     if (!existing) return res.status(404).json({ error: 'Product not found' });
     
-    const { name, description, weight, price, quantity } = req.body;
+    const { name, description, weight, price, quantity, min_stock_level } = req.body;
     
     const p = await prisma.product.update({
       where: {
@@ -175,6 +181,7 @@ router.put('/:code', validateData(updateProductSchema), async (req: AuthRequest,
         weight: weight ?? existing.weight,
         price: price ?? existing.price,
         quantity: quantity ?? existing.quantity,
+        minStockLevel: min_stock_level ?? existing.minStockLevel,
         lastUpdated: new Date()
       }
     });
@@ -183,6 +190,7 @@ router.put('/:code', validateData(updateProductSchema), async (req: AuthRequest,
       ...p,
       product_code: p.productCode,
       company_id: p.companyId,
+      min_stock_level: p.minStockLevel,
       last_updated: p.lastUpdated
     });
   } catch (err) {
