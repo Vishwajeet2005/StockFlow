@@ -17,7 +17,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **StockFlow** is a comprehensive, full-stack inventory and supply chain management platform engineered for modern SMEs. Designed with an unwavering focus on **security**, **scalability**, and **user experience**, StockFlow leverages a true multi-tenant architecture. This enables multiple companies to operate entirely isolated, secure workspaces within a single deployment instance.
 
@@ -27,7 +27,7 @@ Whether accessed via the web or through the native Windows companion application
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 - **🏢 True Multi-Tenant Architecture**  
   Complete data isolation at the database level. Multiple organizations can seamlessly register, operate, and manage their own isolated workspaces without risk of cross-tenant data leakage.
@@ -50,7 +50,7 @@ Whether accessed via the web or through the native Windows companion application
 
 ---
 
-## 🔒 Enterprise Security Posture
+## Enterprise Security Posture
 
 Security is treated as a first-class citizen in StockFlow, implementing a **Zero-Trust Security Model**:
 
@@ -63,7 +63,7 @@ Security is treated as a first-class citizen in StockFlow, implementing a **Zero
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 StockFlow is built on a modern, robust, and scalable foundation:
 
@@ -131,7 +131,7 @@ npm run package:exe
 
 ---
 
-## 📂 System Architecture
+## System Architecture
 
 ```text
 inventory-management/
@@ -159,7 +159,7 @@ inventory-management/
 
 ---
 
-## 👥 Participating Team
+## Participating Team
 - **Project:** StockFlow
 - **Developer:** Vishwajeet2005
 - **Event:** Sunmount Solutions Hackathon
