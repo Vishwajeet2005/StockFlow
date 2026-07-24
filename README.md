@@ -23,29 +23,29 @@
 
 Whether accessed via the web or through the native Windows companion application, StockFlow orchestrates the complete product lifecycle—from raw material purchasing and manufacturing batch tracking to final sales order fulfillment and real-time analytics.
 
-**🔗 Live Demo:** [https://stockflow-obza.onrender.com](https://stockflow-obza.onrender.com)
+**Live Demo:** [https://stockflow-obza.onrender.com](https://stockflow-obza.onrender.com)
 
 ---
 
 ## Key Features
 
-- **🏢 True Multi-Tenant Architecture**  
+- ** True Multi-Tenant Architecture**  
   Complete data isolation at the database level. Multiple organizations can seamlessly register, operate, and manage their own isolated workspaces without risk of cross-tenant data leakage.
 
-- **🛡️ Role-Based Access Control (RBAC)**  
+- ** Role-Based Access Control (RBAC)**  
   Distinct permissions for `Admin` and `Staff` roles. Staff members are granted restricted access, ensuring they cannot delete critical records, view financial analytics, or modify security configurations.
 
-- **🔄 End-to-End Order Lifecycle Management**  
+- ** End-to-End Order Lifecycle Management**  
   - **Sales Orders:** Quotation → Packing → Dispatched (Auto-deducts stock) → Completed.
   - **Purchase Orders:** Quotation Received → Unpaid → Paid → Completed (Auto-adds stock).
 
-- **🏭 Manufacturing & Work-In-Progress (WIP)**  
+- ** Manufacturing & Work-In-Progress (WIP)**  
   Define and execute manufacturing batches. The system automatically calculates and deducts the required raw materials while adding the finished goods to your inventory upon completion.
 
-- **📊 Advanced Real-Time Analytics & UX**  
+- ** Advanced Real-Time Analytics & UX**  
   Interactive visual dashboards powered by Recharts provide insights into sales and purchase trends. Enjoy a premium, modern interface featuring **System/Dark Mode toggling**, responsive pagination, and fluid skeleton loading states.
 
-- **📩 Automated Low-Stock Email Alerts** *(New!)*  
+- ** Automated Low-Stock Email Alerts** *(New!)*  
   Admins can define custom minimum stock thresholds per product. A daily background cron job securely dispatches an HTML email digest summarizing all products that require restocking, powered by NodeMailer.
 
 ---
@@ -78,7 +78,7 @@ StockFlow is built on a modern, robust, and scalable foundation:
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Option 1: Docker (Recommended for Production)
 Deploy the entire stack (Frontend, Backend, and PostgreSQL) seamlessly with a single command.
