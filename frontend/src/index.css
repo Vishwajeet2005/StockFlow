@@ -39,33 +39,33 @@
 
 .dark {
   /* Colors - Dark Mode */
-  --bg-body: #0f1117;
-  --text-body: #f8f9fb;
-  --bg-card: #161922;
+  --bg-body: #000000;
+  --text-body: #ffffff;
+  --bg-card: #0a0a0a;
 
-  --border-subtle: #2d3348;
-  --border-strong: #1e222f;
+  --border-subtle: #333333;
+  --border-strong: #1f1f1f;
 
-  --text-muted: #9ba3b4;
-  --text-faint: #5a6272;
-  --text-inverse: #ffffff;
+  --text-muted: #a3a3a3;
+  --text-faint: #737373;
+  --text-inverse: #000000;
 
   --primary: #3898f6;
   --primary-hover: #7cbcfb;
-  --primary-bg-light: #1e2a44;
+  --primary-bg-light: #1a2a3a;
 
-  --surface-0: #161922;
-  --surface-1: #1e222f;
-  --surface-2: #2d3348;
-  --surface-3: #3b425b;
+  --surface-0: #0a0a0a;
+  --surface-1: #141414;
+  --surface-2: #1f1f1f;
+  --surface-3: #292929;
 
-  --ink-900: #f8f9fb;
-  --ink-700: #e8ebf0;
-  --ink-500: #9ba3b4;
-  --ink-300: #5a6272;
-  --ink-100: #2d3348;
+  --ink-900: #ffffff;
+  --ink-700: #e5e5e5;
+  --ink-500: #a3a3a3;
+  --ink-300: #737373;
+  --ink-100: #404040;
 
-  --modal-bg: rgba(0, 0, 0, 0.7);
+  --modal-bg: rgba(0, 0, 0, 0.85);
 }
 
 body {
